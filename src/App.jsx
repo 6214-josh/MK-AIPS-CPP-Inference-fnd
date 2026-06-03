@@ -8,6 +8,7 @@ import RunCardPanel from './components/RunCardPanel.jsx'
 import DqnExplainPanel from './components/DqnExplainPanel.jsx'
 import IntegrationOutputPanel from './components/IntegrationOutputPanel.jsx'
 import RealtimeEventPanel from './components/RealtimeEventPanel.jsx'
+import AipsFlowVerificationPanel from './components/AipsFlowVerificationPanel.jsx'
 
 import {
   Dashboard,
@@ -79,9 +80,10 @@ const MENU_GROUPS = [
       { key: 'prediction', label: '2. AI 生產預測', icon: '📈' },
       { key: 'model_status', label: '3. 模型檔案狀態', icon: '💾' },
       { key: 'model_optimization', label: '4. 模型優化 / 部署', icon: '🚀' },
-      { key: 'action', label: '5. DQN 排程 Action', icon: '✅' },
-      { key: 'dqn_explain', label: '6. DQN Reward 說明', icon: '🎯' },
-      { key: 'reward', label: '7. Reward 回饋', icon: '🏆' },
+      { key: 'aips_flow_verify', label: '5. AIPS 1-10 流程驗證', icon: '🧭' },
+      { key: 'action', label: '6. DQN 排程 Action', icon: '✅' },
+      { key: 'dqn_explain', label: '7. DQN Reward 說明', icon: '🎯' },
+      { key: 'reward', label: '8. Reward 回饋', icon: '🏆' },
     ],
   },
 ]
@@ -107,6 +109,7 @@ const PANEL_MAP = {
   prediction: <PredictionPanel />,
   model_status: <ModelStatusPanel />,
   model_optimization: <ModelOptimizationPanel />,
+  aips_flow_verify: <AipsFlowVerificationPanel />,
   action: <DqnActionPanel />,
   dqn_explain: <DqnExplainPanel />,
   reward: <RewardPanel />,
