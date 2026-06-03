@@ -1762,3 +1762,46 @@ pre {
     font-size: 18px;
   }
 }
+
+
+.model-image-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.model-image-card {
+  border: 1px solid #d8e0eb;
+  border-radius: 12px;
+  padding: 12px;
+  background: #ffffff;
+  overflow: auto;
+  max-height: 520px;
+}
+
+.model-image-card h3 {
+  margin: 0 0 10px;
+  font-size: 14px;
+}
+
+.model-image-card img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  background: #fff;
+}
+
+.empty-image {
+  padding: 36px;
+  text-align: center;
+  color: #64748b;
+  background: #f8fafc;
+  border-radius: 10px;
+}
+
+.action-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}

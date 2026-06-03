@@ -553,6 +553,8 @@ export function ModelStatusPanel() {
 export function ModelOptimizationPanel() {
   const [concerns, setConcerns] = useState(null)
   const [workflow, setWorkflow] = useState(null)
+  const [runningStep, setRunningStep] = useState('')
+  const [commandResult, setCommandResult] = useState(null)
 
   const concernColumns = ['step', 'risk', 'impact']
   const concernLabels = {
@@ -577,6 +579,15 @@ export function ModelOptimizationPanel() {
     path: '路徑',
   }
 
+  const flowColumns = ['no', 'name', 'description', 'inputs', 'outputs']
+  const flowLabels = {
+    no: '順序',
+    name: '流程',
+    description: '說明',
+    inputs: '輸入',
+    outputs: '輸出',
+  }
+
   async function load() {
     const concernRes = await apiClient
       .get('/aips/model-optimization/concerns')
@@ -590,6 +601,23 @@ export function ModelOptimizationPanel() {
     setWorkflow(workflowRes?.data || null)
   }
 
+  async function runStep(step) {
+    setRunningStep(step)
+    setCommandResult(null)
+
+    try {
+      const res = await apiClient.post(`/aips/model-optimization/run/${step}`)
+      setCommandResult(res.data)
+      await load()
+    } catch (err) {
+      const data = err?.response?.data?.detail?.result || err?.response?.data || err?.message
+      setCommandResult(data)
+      showError(err)
+    } finally {
+      setRunningStep('')
+    }
+  }
+
   useEffect(() => {
     load()
   }, [])
@@ -599,14 +627,42 @@ export function ModelOptimizationPanel() {
     output: Array.isArray(step.output) ? step.output.join('、') : step.output,
   }))
 
+  const flowRows = (workflow?.integrated_flow?.stages || []).map((stage) => ({
+    ...stage,
+    inputs: Array.isArray(stage.inputs) ? stage.inputs.join('、') : stage.inputs,
+    outputs: Array.isArray(stage.outputs) ? stage.outputs.join('、') : stage.outputs,
+  }))
+
+  const pngFiles = [
+    'dqn_scheduler_policy.png',
+    'dqn_scheduler_policy_pruned.png',
+    'lstm_quantity_forecast.png',
+    'lstm_quantity_forecast_pruned.png',
+  ]
+
+  const pngUrl = (filename) => `${apiClient.defaults.baseURL}/aips/model-optimization/files/${filename}?t=${Date.now()}`
+
   return (
     <div className="page">
       <PageHeader
         title="模型優化 / 部署"
-        subtitle="將資料品質、特徵工程、調參、剪枝、量化、ONNX、TensorRT 的 concern 與操作流程放進專案，Demo 時可直接展示。"
+        subtitle="依照 AIPS：資料入層 → 特徵工程 → LSTM → ARIMA → Prediction Fusion → DQN State → Q-Network → Action → MES → Reward 回饋。"
       >
         <button onClick={load}>重新整理</button>
       </PageHeader>
+
+      {workflow?.integrated_flow && (
+        <div className="card">
+          <h2>{workflow.integrated_flow.title}</h2>
+          <p>{workflow.integrated_flow.summary}</p>
+          <DataTable
+            columns={flowColumns}
+            rows={flowRows}
+            labels={flowLabels}
+            pageable={false}
+          />
+        </div>
+      )}
 
       {concerns && (
         <div className="card">
@@ -623,6 +679,35 @@ export function ModelOptimizationPanel() {
 
       {workflow && (
         <>
+          <div className="card">
+            <h2>一鍵執行模型優化指令</h2>
+            <div className="action-grid">
+              <button disabled={!!runningStep} onClick={() => runStep('prune')}>
+                1. 執行剪枝
+              </button>
+              <button disabled={!!runningStep} onClick={() => runStep('export')}>
+                2. 量化 + ONNX 匯出
+              </button>
+              <button disabled={!!runningStep} onClick={() => runStep('onnx_png')}>
+                3. 產生 ONNX PNG
+              </button>
+              <button disabled={!!runningStep} onClick={() => runStep('test')}>
+                4. ONNX Runtime 驗證
+              </button>
+              <button className="primary-btn" disabled={!!runningStep} onClick={() => runStep('tensorrt')}>
+                5. 轉 TensorRT Engine
+              </button>
+            </div>
+
+            {runningStep && <div className="export-message">正在執行：{runningStep}，請稍候...</div>}
+
+            {commandResult && (
+              <pre className="code-block">
+                {JSON.stringify(commandResult, null, 2)}
+              </pre>
+            )}
+          </div>
+
           <div className="card">
             <h2>模型優化流程</h2>
             <DataTable
@@ -643,14 +728,37 @@ export function ModelOptimizationPanel() {
           </div>
 
           <div className="card">
+            <h2>ONNX 模型結構圖 PNG</h2>
+            <p>先按「量化 + ONNX 匯出」，再按「產生 ONNX PNG」。若 PNG 無法產生，請安裝 Graphviz 並確認 <code>dot -V</code> 可執行；互動觀看則可使用 Netron。</p>
+            <div className="model-image-grid">
+              {pngFiles.map((filename) => {
+                const exists = (workflow.model_files || []).find((f) => f.filename === filename)?.exists
+                return (
+                  <div className="model-image-card" key={filename}>
+                    <h3>{filename}</h3>
+                    {exists ? (
+                      <img src={pngUrl(filename)} alt={filename} />
+                    ) : (
+                      <div className="empty-image">尚未產生</div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          <div className="card">
             <h2>建議執行順序</h2>
             <pre className="code-block">
 {`python tools\\model_optimization\\prune_models.py
 python tools\\model_optimization\\export_quant_onnx.py
+python tools\\model_optimization\\export_onnx_png.py
 python tools\\model_optimization\\test_onnx_runtime.py
 
-trtexec --onnx=models\\dqn_scheduler_policy.onnx --saveEngine=models\\dqn_scheduler_policy.engine --fp16`}
+trtexec --onnx=models\\dqn_scheduler_policy.onnx --saveEngine=models\\dqn_scheduler_policy.engine`}
             </pre>
+            <p><strong>注意：</strong>已移除 --fp16，因你目前測試 --fp16 失敗；先使用 FP32 TensorRT engine 展示成功流程。</p>
+            <p>Netron 互動看圖：<code>python -m pip install netron</code>，再執行 <code>netron models\dqn_scheduler_policy.onnx</code>。</p>
           </div>
         </>
       )}
