@@ -59,7 +59,7 @@ export default function DqnExplainPanel() {
       </div>
 
       <div className="explain-banner">
-        DQN 不是單純寫 if/else，它會把 ERP 製令、流程卡工序、CNC 智慧電表、WMS 線邊庫存轉成 State Vector，
+        DQN會把 ERP 製令、流程卡工序、CNC 智慧電表、WMS 線邊庫存轉成 State Vector，
         再比較每個 Action 的 Reward / Q Value，最後選擇分數最高的事件。
       </div>
 
