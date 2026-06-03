@@ -1,0 +1,21 @@
+{
+  "name": "aips-react-frontend",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0 --port 5074",
+    "build": "vite build",
+    "preview": "vite preview",
+    "dev:8999": "vite --host 0.0.0.0 --port 5074"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "latest",
+    "axios": "latest",
+    "vite": "latest",
+    "typescript": "latest",
+    "react": "latest",
+    "react-dom": "latest"
+  },
+  "devDependencies": {}
+}
