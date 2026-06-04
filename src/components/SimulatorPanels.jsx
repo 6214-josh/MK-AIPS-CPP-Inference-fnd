@@ -45,3 +45,35 @@ export function LineSideLogisticsSimulator(){
   useEffect(()=>{load()},[])
   return <div className="page"><PageHeader title="線邊庫 / 人工物流模擬器" subtitle="模擬人工推車補料、領料、退料，並回寫 WMS 線邊庫庫存。"><button className="primary-btn" onClick={demo}>模擬補料事件</button><button onClick={load}>重新整理</button></PageHeader><div className="card"><h2>人工物流事件</h2><DataTable columns={columns} rows={rows}/></div><div className="card"><h2>線邊庫庫存快照</h2><DataTable columns={invColumns} rows={inv}/></div></div>
 }
+
+
+export function ErpSimulator(){
+  const [summary,setSummary]=useState({})
+  const [orders,setOrders]=useState([])
+  const [callbacks,setCallbacks]=useState([])
+  const [message,setMessage]=useState('')
+  const orderColumns=['snapshot_id','snapshot_time','work_order_no','sales_order_no','product_no','planned_qty','completed_qty','remaining_qty','current_process_status','priority_level','assigned_cnc_machine_id']
+  const callbackColumns=['integration_id','integration_time','direction','api_name','status','message']
+  async function load(){
+    setSummary((await apiClient.get('/erp-simulator/summary')).data||{})
+    setOrders((await apiClient.get('/erp-simulator/orders/latest')).data||[])
+    setCallbacks((await apiClient.get('/erp-simulator/callbacks/latest')).data||[])
+  }
+  async function receiveDemo(){
+    const res=await apiClient.post('/erp-simulator/receive-demo').catch(showError)
+    if(res?.data) setMessage(res.data.message || 'ERP 新製令已接收')
+    await load()
+  }
+  async function processPending(){
+    const res=await apiClient.post('/erp-simulator/process-pending').catch(showError)
+    if(res?.data) setMessage(res.data.message || 'ERP 處理結果已回傳')
+    await load()
+  }
+  async function runFullFlow(){
+    const res=await apiClient.post('/aips/data-engineering/run-full-flow').catch(showError)
+    if(res?.data) setMessage(res.data.message || '已執行 AIPS 1-10 全流程並回傳 ERP')
+    await load()
+  }
+  useEffect(()=>{load()},[])
+  return <div className="page"><PageHeader title="ERP 模擬器" subtitle="模擬 ERP 送入製令資料，AIPS 處理完成後再回傳 ERP 模擬器。"><button className="primary-btn" onClick={receiveDemo}>接收 ERP 新製令</button><button onClick={processPending}>處理完成並回傳 ERP</button><button onClick={runFullFlow}>跑 AIPS 1-10 + ERP 回傳</button><button onClick={load}>重新整理</button></PageHeader>{message&&<div className="export-message">操作結果：{message}</div>}<div className="metric-grid"><div className="metric-card"><div className="metric-label">ERP 總製令</div><div className="metric-value">{summary.total_count||0}</div><div className="metric-hint">ERP 模擬器目前最新製令數</div></div><div className="metric-card"><div className="metric-label">ERP 已處理</div><div className="metric-value">{summary.processed_count||0}</div><div className="metric-hint">AIPS 已回傳 ERP 的製令</div></div><div className="metric-card"><div className="metric-label">ERP 未處理</div><div className="metric-value">{summary.unprocessed_count||0}</div><div className="metric-hint">已接收但尚未處理完成</div></div></div><div className="card"><h2>ERP 模擬流程</h2><div className="flow-grid">{['ERP送入製令|寫入 work_order_progress_snapshot，狀態 RECEIVED。','AIPS資料工程|Step1 接收 ERP，Step2 建立 ERP 特徵。','DQN排程|ERP 製令進入 State / Action / Reward。','回傳ERP|處理完成後新增 PROCESSED snapshot 並寫入 OUTBOUND callback。'].map((s,i)=>{const[a,b]=s.split('|');return <div className="flow-step" key={a}><strong>{i+1}. {a}</strong><span>{b}</span></div>})}</div></div><div className="card"><h2>ERP 製令資料</h2><DataTable columns={orderColumns} rows={orders}/></div><div className="card"><h2>AIPS 回傳 ERP 紀錄</h2><DataTable columns={callbackColumns} rows={callbacks}/></div></div>
+}

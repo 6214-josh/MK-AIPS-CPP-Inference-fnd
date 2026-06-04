@@ -32,6 +32,7 @@ import {
   NfcQrTagSimulator,
   CncMeterSimulator,
   LineSideLogisticsSimulator,
+  ErpSimulator,
 } from './components/SimulatorPanels.jsx'
 
 const MENU_GROUPS = [
@@ -50,10 +51,11 @@ const MENU_GROUPS = [
     ],
   },
   {
-    title: '硬體模擬器',
+    title: '軟硬體模擬器',
     icon: '🏭',
     children: [
       { key: 'hw_overview', label: '模擬器總覽', icon: '🗺️' },
+      { key: 'hw_erp', label: 'ERP 模擬器', icon: '🏢' },
       { key: 'hw_pda', label: 'WiFi PDA / Android', icon: '📱' },
       { key: 'hw_tags', label: 'NFC / QR Code 標籤', icon: '🏷️' },
       { key: 'hw_cnc_meter', label: 'CNC + 智慧電表', icon: '⚡' },
@@ -93,6 +95,7 @@ const PANEL_MAP = {
   login_auth: <LoginAuthPanel />,
 
   hw_overview: <HardwareSimulatorOverview />,
+  hw_erp: <ErpSimulator />,
   hw_pda: <PdaAndroidSimulator />,
   hw_tags: <NfcQrTagSimulator />,
   hw_cnc_meter: <CncMeterSimulator />,
@@ -137,7 +140,7 @@ export default function App() {
   const [openedGroups, setOpenedGroups] = useState([
     '總覽',
     '系統管理',
-    '硬體模擬器',
+    '軟硬體模擬器',
     '核心作業',
     'AI 決策',
   ])
