@@ -353,7 +353,16 @@ export default function AipsFlowVerificationPanel() {
         {step9Rows.length > 0 ? (
           <DataTable
             columns={['run_card_detail_id', 'sequence_no', 'station_name', 'process_type', 'cnc_machine_id', 'planned_qty', 'completed_qty', 'shortage_flag', 'quality_risk_score', 'detail_status']}
-            labels={{ run_card_detail_id: '單身ID', sequence_no: '順序', station_name: '站別', process_type: '製程', cnc_machine_id: 'CNC', planned_qty: '計畫量', completed_qty: '完成量', shortage_flag: '缺料', quality_risk_score: '品質風險', detail_status: '狀態' }}
+              labels={{ run_card_detail_id: '單身ID',
+              sequence_no: '順序',
+              station_name: '站別',
+              process_type: '製程',
+              cnc_machine_id: 'CNC',
+              planned_qty: '計畫量',
+              completed_qty: '完成量',
+              shortage_flag: '缺料',
+              quality_risk_score: '品質風險',
+              detail_status: '狀態' }}
             rows={step9Rows}
             pageable={false}
           />

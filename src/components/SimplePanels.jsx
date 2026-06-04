@@ -29,20 +29,51 @@ export function AipsStatePanel() {
   async function load(){ setRows((await apiClient.get('/aips/states/latest')).data || []) }
   async function run(){ await apiClient.post('/aips/states/build'); await load() }
   useEffect(()=>{ load() }, [])
-  return <div className="page"><PageHeader title="DQN State 狀態特徵"><button onClick={run}>建立 DQN State</button><button onClick={load}>重新整理</button></PageHeader><div className="card"><DataTable columns={columns} rows={rows}/></div></div>
+  return <div className="page">
+  <PageHeader title="DQN State 狀態特徵">
+  <button onClick={run}>建立 DQN State</button>
+  <button onClick={load}>重新整理</button>
+  </PageHeader>
+  <div className="card">
+  <DataTable columns={columns} rows={rows}/>
+  </div>
+  </div>
 }
 
 export function DqnActionPanel() {
   const [rows, setRows] = useState([])
   const [gpuHealth, setGpuHealth] = useState(null)
   const columns = ['action_id','action_time','work_order_no','original_cnc_machine_id','suggested_cnc_machine_id','action_type','action_name','action_reason','action_confidence_score','action_status']
-  const labels = { action_id:'編號', action_time:'時間', work_order_no:'製令單', original_cnc_machine_id:'原機台', suggested_cnc_machine_id:'建議機台', action_type:'類型', action_name:'建議', action_reason:'原因', action_confidence_score:'信心', action_status:'狀態' }
+    const labels = { action_id:'編號',
+    action_time:'時間',
+    work_order_no:'製令單',
+    original_cnc_machine_id:'原機台',
+    suggested_cnc_machine_id:'建議機台',
+    action_type:'類型',
+    action_name:'建議',
+    action_reason:'原因',
+    action_confidence_score:'信心',
+    action_status:'狀態' }
   async function load(){ setRows((await apiClient.get('/aips/dqn/actions/latest')).data || []) }
   async function loadGpuHealth(){ setGpuHealth((await apiClient.get('/aips/dqn/gpu-health')).data || null) }
   async function generate(){ await apiClient.post('/aips/dqn/generate-actions'); await load(); await loadGpuHealth() }
   useEffect(()=>{ load(); loadGpuHealth() }, [])
   const gpuStatusText = gpuHealth ? `${gpuHealth.engine || 'CUDA Driver API 推論服務'}：${gpuHealth.status || '-'}${gpuHealth.url ? `｜${gpuHealth.url}` : ''}${gpuHealth.error ? `｜${gpuHealth.error}` : ''}` : '檢查中'
-  return <div className="page"><PageHeader title="DQN 排程Action" subtitle="依據 DQN State 產生提高優先權、換機、補料、預防保養等建議。可優先呼叫獨立 C++ CUDA Driver API 推論服務。"><button className="primary-btn" onClick={generate}>產生 DQN 建議</button><button onClick={load}>重新整理</button><button onClick={loadGpuHealth}>檢查 GPU 推論服務</button></PageHeader><div className="card"><strong>GPU 推論服務狀態：</strong><div>{gpuStatusText}</div></div><div className="card"><DataTable columns={columns} rows={rows} labels={labels}/></div></div>
+  return <div className="page">
+  <PageHeader title="DQN 排程Action" subtitle="依據 DQN State 產生提高優先權、換機、補料、預防保養等建議。可優先呼叫獨立 C++ CUDA Driver API 推論服務。">
+  <button className="primary-btn" onClick={generate}>產生 DQN 建議</button>
+  <button onClick={load}>重新整理</button>
+  <button onClick={loadGpuHealth}>檢查 GPU 推論服務</button>
+  </PageHeader>
+  <div className="card">
+  <strong>GPU 推論服務狀態：</strong>
+  <div>{gpuStatusText}
+  </div>
+  </div>
+  <div className="card">
+  <DataTable columns={columns} rows={rows} labels={labels}/>
+  </div>
+  </div>
 }
 
 export function PredictionPanel() {
