@@ -14,13 +14,17 @@ export default function LoginPage({ onLoginSuccess }) {
   async function login() {
     setLoading(true); setMessage(''); setSuccess(false)
     try {
-      await apiClient.post('/hardware-simulator/init').catch(() => {})
+      // FIX65：
+      // 登入不能被 /hardware-simulator/init 卡住。
+      // 原本會先 await init，若資料表初始化較久或 DB lock，畫面會一直停在「登入中...」。
+      // 現在先登入；登入成功後再背景初始化 Demo schema。
       const res = await apiClient.post('/auth/login', form)
       if (!res.data.success) { setMessage(res.data.message || '登入失敗'); return }
       setSuccess(true); setMessage('登入成功')
       onLoginSuccess({ token: res.data.token, user: res.data.user })
+      apiClient.post('/hardware-simulator/init').catch(() => {})
     } catch (err) {
-      setMessage(err?.response?.data?.detail || err?.response?.data?.message || `${err?.message || '登入 API 發生錯誤'}，目前 API：${window.location.protocol}//${window.location.hostname}:8000/api，請確認後端與防火牆`)
+      setMessage(err?.response?.data?.detail || err?.response?.data?.message || `${err?.message || '登入 API 發生錯誤'}，目前 API：${apiClient.defaults.baseURL}，請確認後端與防火牆`)
     } finally { setLoading(false) }
   }
 

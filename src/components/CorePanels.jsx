@@ -7,15 +7,27 @@ export function Dashboard() {
   const [summary, setSummary] = useState({})
   const latestActions = summary.latest_actions || []
   async function load(){ setSummary((await apiClient.get('/dashboard/summary')).data || {}) }
+  const [flowMessage, setFlowMessage] = useState('')
   async function runFullFlow(){
-    await apiClient.post('/meter/electric/demo-all').catch(()=>{})
-    await apiClient.post('/meter/features/calculate/CNC-01').catch(()=>{})
-    await apiClient.post('/meter/features/calculate/CNC-02').catch(()=>{})
-    await apiClient.post('/meter/features/calculate/CNC-03').catch(()=>{})
-    await apiClient.post('/aips/states/build')
-    await apiClient.post('/aips/dqn/generate-actions')
-    await apiClient.post('/aips/predictions/run')
-    await apiClient.post('/aips/rewards/calculate')
+    setFlowMessage('正在執行 AIPS 1-10 全流程，請稍候...')
+    try {
+      // FIX66：
+      // 總覽頁「一鍵執行 AIPS 流程」改成呼叫 FIX64 的全流程 API。
+      // 會跑：Step1 硬體資料 → Step2 資料工程 → Step3~10 → Reward 回饋循環。
+      const res = await apiClient.post('/aips/data-engineering/run-full-flow')
+      setFlowMessage(res.data?.message || 'AIPS 1-10 全流程執行完成')
+    } catch (err) {
+      // 若後端尚未套用 FIX64，保留舊流程當 fallback，避免按鈕完全失效。
+      await apiClient.post('/meter/electric/demo-all').catch(()=>{})
+      await apiClient.post('/meter/features/calculate/CNC-01').catch(()=>{})
+      await apiClient.post('/meter/features/calculate/CNC-02').catch(()=>{})
+      await apiClient.post('/meter/features/calculate/CNC-03').catch(()=>{})
+      await apiClient.post('/aips/states/build').catch(()=>{})
+      await apiClient.post('/aips/dqn/generate-actions').catch(()=>{})
+      await apiClient.post('/aips/predictions/run').catch(()=>{})
+      await apiClient.post('/aips/rewards/calculate').catch(()=>{})
+      setFlowMessage('後端全流程 API 尚未可用，已改用舊版流程 fallback 執行')
+    }
     await load()
   }
   function toPercent(v){ return `${(Number(v || 0)*100).toFixed(0)}%` }
@@ -23,7 +35,7 @@ export function Dashboard() {
   useEffect(()=>{ load() }, [])
   const actionColumns=['action_id','action_time','action_name','work_order_no','original_cnc_machine_id','expected_oee_improvement_rate','action_confidence_score','action_reason']
   const actionLabels={action_id:'編號',action_time:'時間',action_name:'建議動作',work_order_no:'製令單',original_cnc_machine_id:'CNC 機台',expected_oee_improvement_rate:'預估 OEE 改善',action_confidence_score:'信心分數',action_reason:'建議原因'}
-  return <div className="page"><PageHeader title="AIPS / MK-AIPS 智慧排程總覽" subtitle="整合 CNC 智慧電表、ERP 製令單、WMS 線邊庫資料，建立 DQN State，產生排程建議與 Reward 回饋。"><button className="primary-btn" onClick={runFullFlow}>一鍵執行 AIPS 流程</button><button onClick={load}>重新整理</button></PageHeader><div className="metric-grid dashboard-metric-grid">{[
+  return <div className="page"><PageHeader title="AIPS / MK-AIPS 智慧排程總覽" subtitle="整合 CNC 智慧電表、ERP 製令單、WMS 線邊庫資料，建立 DQN State，產生排程建議與 Reward 回饋。"><button className="primary-btn" onClick={runFullFlow}>一鍵執行 AIPS 流程</button><button onClick={load}>重新整理</button></PageHeader>{flowMessage&&<div className="export-message">操作結果：{flowMessage}</div>}<div className="metric-grid dashboard-metric-grid">{[
     ['ERP 已處理', summary.erp_processed_count, `完成 / 關閉 / remaining_qty=0，總數 ${summary.erp_total_count || summary.work_order_progress_snapshot || 0}`],
     ['ERP 未處理', summary.erp_unprocessed_count, `仍需排程或加工，總數 ${summary.erp_total_count || summary.work_order_progress_snapshot || 0}`],
     ['CNC 電表資料', summary.cnc_meter_raw_data, '智慧電表原始回傳筆數'],
