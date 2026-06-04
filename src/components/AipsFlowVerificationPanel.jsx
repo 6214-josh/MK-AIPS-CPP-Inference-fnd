@@ -65,6 +65,7 @@ export default function AipsFlowVerificationPanel() {
     downstream: [],
     feedback: null,
     predictions: [],
+    runCardFeatures: [],
     states: [],
     actions: [],
     rewards: [],
@@ -79,6 +80,7 @@ export default function AipsFlowVerificationPanel() {
         downstream,
         feedback,
         predictions,
+        runCardFeatures,
         states,
         actions,
         rewards,
@@ -88,12 +90,13 @@ export default function AipsFlowVerificationPanel() {
         apiClient.get('/aips/data-engineering/downstream-summary').then((r) => toArray(r.data)).catch(() => []),
         apiClient.get('/aips/data-engineering/feedback-summary').then((r) => r.data).catch(() => null),
         apiClient.get('/aips/predictions/latest').then((r) => toArray(r.data)).catch(() => []),
+        apiClient.get('/run-cards/features').then((r) => toArray(r.data)).catch(() => []),
         apiClient.get('/aips/states/latest').then((r) => toArray(r.data)).catch(() => []),
         apiClient.get('/aips/dqn/actions/latest').then((r) => toArray(r.data)).catch(() => []),
         apiClient.get('/aips/rewards/latest').then((r) => toArray(r.data)).catch(() => []),
       ])
 
-      setData({ sources, features, downstream, feedback, predictions, states, actions, rewards })
+      setData({ sources, features, downstream, feedback, predictions, runCardFeatures, states, actions, rewards })
     } finally {
       setLoading(false)
     }
@@ -107,6 +110,7 @@ export default function AipsFlowVerificationPanel() {
       setMessage(res.data.message || `${label} 完成`)
       setFlowResult(res.data)
       await load()
+      setTimeout(() => document.getElementById('latest-run-summary')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 150)
     } catch (err) {
       const detail = err?.response?.data?.detail || err?.message || `${label} 失敗`
       setMessage(detail)
@@ -131,6 +135,54 @@ export default function AipsFlowVerificationPanel() {
     ...row,
     latest_feature_time: formatTime(row.latest_feature_time),
   }))
+
+  const runStageRows = toArray(flowResult?.stages).map((row) => ({
+    ...row,
+    created_count: row.created_count ?? 0,
+  }))
+
+  const latestRunWorkOrderNo = flowResult?.run_card_demo?.work_order_no || ''
+  const latestRunCardNo = flowResult?.run_card_demo?.run_card_no || ''
+  const latestRunId = flowResult?.run_card_demo?.run_card_id || ''
+  const runStageTotal = runStageRows.reduce((sum, row) => sum + Number(row.created_count || 0), 0)
+  const runStageSummaryRows = runStageRows.filter((row) => Number(row.created_count || 0) > 0).slice(0, 12)
+
+  const currentRun = flowResult?.current_run || null
+  const step3Rows = toArray(currentRun?.predictions).length ? toArray(currentRun?.predictions) : data.predictions.slice(0, 8)
+  const step4RowsFromCurrentRun = toArray(currentRun?.run_card_features)
+  const step6Rows = toArray(currentRun?.states).length ? toArray(currentRun?.states) : data.states.slice(0, 8)
+  const step7Rows = toArray(currentRun?.actions).length ? toArray(currentRun?.actions) : data.actions.slice(0, 8)
+  const step8Rows = step7Rows
+  const step9Rows = toArray(currentRun?.run_card_details)
+  const step10Rows = toArray(currentRun?.rewards).length ? toArray(currentRun?.rewards) : data.rewards.slice(0, 8)
+
+  const focusedRunCardFeatures = step4RowsFromCurrentRun.length
+    ? step4RowsFromCurrentRun
+    : (latestRunWorkOrderNo ? data.runCardFeatures.filter((row) => row.work_order_no === latestRunWorkOrderNo) : data.runCardFeatures)
+
+  const arimaRows = [
+    ...focusedRunCardFeatures.slice(0, 10).map((row) => ({
+      source: step4RowsFromCurrentRun.length ? '本次流程卡 AI 特徵' : '製令流程卡 AI 特徵',
+      work_order_no: row.work_order_no,
+      station_name: row.station_name,
+      cnc_machine_id: row.cnc_machine_id,
+      arima_predicted_minutes: row.arima_predicted_minutes,
+      lstm_predicted_minutes: row.lstm_predicted_minutes,
+      delay_risk_score: row.delay_risk_score,
+    })),
+    ...data.features
+      .filter((f) => text(f.downstream_stage).includes('ARIMA') && (!latestRunWorkOrderNo || !f.work_order_no || f.work_order_no === latestRunWorkOrderNo))
+      .slice(0, 10)
+      .map((row) => ({
+        source: row.feature_category,
+        work_order_no: row.work_order_no,
+        station_name: row.feature_name,
+        cnc_machine_id: row.cnc_machine_id,
+        arima_predicted_minutes: row.cleaned_value,
+        lstm_predicted_minutes: '-',
+        delay_risk_score: row.normalized_value,
+      })),
+  ].slice(0, 10)
 
   const stepOverviewRows = [
     { no: 1, name: '資料輸入層', status: Number(sourceMap.cnc_meter_raw_data?.record_count || 0) > 0 ? '可看' : '待補', page: '模擬硬體 / ERP / WMS / MES' },
@@ -178,6 +230,26 @@ export default function AipsFlowVerificationPanel() {
         {message && <div className="export-message">操作結果：{message}</div>}
       </div>
 
+      {runStageRows.length > 0 && (
+        <div className="card latest-run-card" id="latest-run-summary">
+          <h2>本次執行結果摘要</h2>
+          <div className="flow-stat-grid">
+            <SmallStat title="本次總新增 / 異動" value={runStageTotal} note="Step1~Step10 加總，不是表格總筆數" />
+            <SmallStat title="本次流程卡" value={latestRunCardNo || latestRunId || '-'} note={latestRunWorkOrderNo ? `製令：${latestRunWorkOrderNo}` : '本次執行產生的 MES 流程卡'} />
+            <SmallStat title="ERP 回傳" value={flowResult?.erp_callback?.processed_count ?? 0} note="AIPS 已處理完成並回傳 ERP 模擬器" />
+            <SmallStat title="Reward 回饋特徵" value={data.feedback?.feedback_count || 0} note="Step10 → Step1/2 → Step3~10" />
+          </div>
+          <h3>本次各階段新增 / 異動筆數</h3>
+          <p className="flow-help-text">下面這張表才是判斷本次按下按鈕後 3~10 有沒有跑的依據；下方各資料表則是最新 DB 資料，可能因排序與分頁看起來差異不明顯。</p>
+          <DataTable
+            columns={['step_no', 'step_name', 'created_count', 'message']}
+            labels={{ step_no: '步驟', step_name: '階段', created_count: '本次新增 / 異動', message: '結果說明' }}
+            rows={runStageSummaryRows.length ? runStageSummaryRows : runStageRows}
+            pageable={false}
+          />
+        </div>
+      )}
+
       <div className="card">
         <h2>1-10 驗證總表</h2>
         <DataTable
@@ -213,19 +285,32 @@ export default function AipsFlowVerificationPanel() {
         />
       </SectionCard>
 
-      <SectionCard no={3} title="LSTM 產量預測" pageName="AI 生產預測" ready={data.predictions.length > 0}>
+      {currentRun && (
+        <div className="card latest-run-card">
+          <h2>本次執行後，下方 Step3~10 表格已切換為本次新增資料</h2>
+          <DataTable
+            columns={['table_name', 'count']}
+            labels={{ table_name: '表格', count: '本次資料筆數' }}
+            rows={Object.entries(currentRun.changed_table_counts || {}).map(([table_name, count]) => ({ table_name, count }))}
+            pageable={false}
+          />
+        </div>
+      )}
+
+      <SectionCard no={3} title="LSTM 產量預測" pageName="AI 生產預測" ready={step3Rows.length > 0}>
         <DataTable
           columns={['work_order_no', 'cnc_machine_id', 'predicted_value', 'predicted_good_qty', 'predicted_ng_qty', 'predicted_yield_rate', 'confidence_score']}
           labels={{ work_order_no: '製令單', cnc_machine_id: 'CNC', predicted_value: '預測產量', predicted_good_qty: '良品量', predicted_ng_qty: '不良量', predicted_yield_rate: '良率', confidence_score: '信心' }}
-          rows={data.predictions.slice(0, 8)}
+          rows={step3Rows}
         />
       </SectionCard>
 
-      <SectionCard no={4} title="ARIMA 時間序列預測" pageName="資料工程特徵池 / 製令流程卡 AI 特徵" ready={data.features.some((f) => text(f.downstream_stage).includes('ARIMA'))}>
+      <SectionCard no={4} title="ARIMA 時間序列預測" pageName="資料工程特徵池 / 製令流程卡 AI 特徵" ready={arimaRows.length > 0}>
+        {latestRunWorkOrderNo && <p className="flow-help-text">目前優先顯示本次流程卡製令：{latestRunWorkOrderNo}</p>}
         <DataTable
-          columns={['feature_category', 'feature_name', 'cleaned_value', 'normalized_value', 'downstream_stage']}
-          labels={{ feature_category: '類別', feature_name: '特徵', cleaned_value: '清洗值', normalized_value: '正規化值', downstream_stage: '送往階段' }}
-          rows={data.features.filter((f) => text(f.downstream_stage).includes('ARIMA')).slice(0, 10)}
+          columns={['source', 'work_order_no', 'station_name', 'cnc_machine_id', 'arima_predicted_minutes', 'lstm_predicted_minutes', 'delay_risk_score']}
+          labels={{ source: '來源', work_order_no: '製令單', station_name: '站別 / 特徵', cnc_machine_id: 'CNC', arima_predicted_minutes: 'ARIMA 預測分鐘', lstm_predicted_minutes: 'LSTM 預測分鐘', delay_risk_score: '延遲風險' }}
+          rows={arimaRows}
         />
       </SectionCard>
 
@@ -238,46 +323,55 @@ export default function AipsFlowVerificationPanel() {
         />
       </SectionCard>
 
-      <SectionCard no={6} title="DQN State 狀態向量" pageName="DQN State" ready={data.states.length > 0}>
+      <SectionCard no={6} title="DQN State 狀態向量" pageName="DQN State" ready={step6Rows.length > 0}>
         <DataTable
           columns={['state_id', 'work_order_no', 'cnc_machine_id', 'machine_status', 'delay_risk_score', 'shortage_risk_score', 'quality_risk_score', 'current_oee']}
           labels={{ state_id: 'State', work_order_no: '製令單', cnc_machine_id: 'CNC', machine_status: '機台狀態', delay_risk_score: '延遲風險', shortage_risk_score: '缺料風險', quality_risk_score: '品質風險', current_oee: 'OEE' }}
-          rows={data.states.slice(0, 8)}
+          rows={step6Rows}
         />
       </SectionCard>
 
-      <SectionCard no={7} title="DQN Q-Network" pageName="DQN 排程 Action / 模型優化" ready={data.actions.length > 0}>
+      <SectionCard no={7} title="DQN Q-Network" pageName="DQN 排程 Action / 模型優化" ready={step7Rows.length > 0}>
         <p className="flow-help-text">DQN 由 Step6 State 進入 Q-Network，輸出 Action 與信心分數；詳細 Q value 可在 Action reason 內看到。</p>
         <DataTable
           columns={['action_id', 'work_order_no', 'original_cnc_machine_id', 'suggested_cnc_machine_id', 'action_name', 'action_confidence_score']}
           labels={{ action_id: 'Action', work_order_no: '製令單', original_cnc_machine_id: '原機台', suggested_cnc_machine_id: '建議機台', action_name: 'Action', action_confidence_score: '信心' }}
-          rows={data.actions.slice(0, 8)}
+          rows={step7Rows}
         />
       </SectionCard>
 
-      <SectionCard no={8} title="Action 決策" pageName="DQN 排程 Action" ready={data.actions.length > 0}>
+      <SectionCard no={8} title="Action 決策" pageName="DQN 排程 Action" ready={step8Rows.length > 0}>
         <DataTable
           columns={['action_id', 'action_type', 'action_name', 'action_reason', 'action_status']}
           labels={{ action_id: 'ID', action_type: '類型', action_name: '建議', action_reason: '原因', action_status: '狀態' }}
-          rows={data.actions.slice(0, 8)}
+          rows={step8Rows}
         />
       </SectionCard>
 
-      <SectionCard no={9} title="MES 執行層" pageName="製令流程卡 / AI、即時事件" ready={Number(sourceMap.aips_run_card_detail?.record_count || 0) > 0}>
-        <p className="flow-help-text">以製令流程卡與即時事件模擬 MES 執行結果，供 Step10 Reward 驗證。</p>
-        <DataTable
-          columns={['source_table', 'description', 'record_count', 'latest_created_at']}
-          labels={{ source_table: '資料表', description: '說明', record_count: '筆數', latest_created_at: '最新時間' }}
-          rows={data.sources.filter((row) => ['aips_run_card_detail', 'aips_scan_event'].includes(row.source_table)).map((row) => ({ ...row, latest_created_at: formatTime(row.latest_created_at) }))}
-          pageable={false}
-        />
+      <SectionCard no={9} title="MES 執行層" pageName="製令流程卡 / AI、即時事件" ready={Number(sourceMap.aips_run_card_detail?.record_count || 0) > 0 || step9Rows.length > 0}>
+        <p className="flow-help-text">以製令流程卡與即時事件模擬 MES 執行結果，供 Step10 Reward 驗證。若已跑全流程，下表優先顯示本次新增的流程卡單身。</p>
+        {step9Rows.length > 0 ? (
+          <DataTable
+            columns={['run_card_detail_id', 'sequence_no', 'station_name', 'process_type', 'cnc_machine_id', 'planned_qty', 'completed_qty', 'shortage_flag', 'quality_risk_score', 'detail_status']}
+            labels={{ run_card_detail_id: '單身ID', sequence_no: '順序', station_name: '站別', process_type: '製程', cnc_machine_id: 'CNC', planned_qty: '計畫量', completed_qty: '完成量', shortage_flag: '缺料', quality_risk_score: '品質風險', detail_status: '狀態' }}
+            rows={step9Rows}
+            pageable={false}
+          />
+        ) : (
+          <DataTable
+            columns={['source_table', 'description', 'record_count', 'latest_created_at']}
+            labels={{ source_table: '資料表', description: '說明', record_count: '筆數', latest_created_at: '最新時間' }}
+            rows={data.sources.filter((row) => ['aips_run_card_detail', 'aips_scan_event'].includes(row.source_table)).map((row) => ({ ...row, latest_created_at: formatTime(row.latest_created_at) }))}
+            pageable={false}
+          />
+        )}
       </SectionCard>
 
-      <SectionCard no={10} title="Reward 計算與回饋" pageName="Reward 回饋" ready={data.rewards.length > 0}>
+      <SectionCard no={10} title="Reward 計算與回饋" pageName="Reward 回饋" ready={step10Rows.length > 0}>
         <DataTable
           columns={['reward_id', 'work_order_no', 'cnc_machine_id', 'reward_score', 'actual_oee', 'actual_yield_rate', 'energy_saving_rate']}
           labels={{ reward_id: 'Reward', work_order_no: '製令單', cnc_machine_id: 'CNC', reward_score: '總分', actual_oee: '實際 OEE', actual_yield_rate: '實際良率', energy_saving_rate: '節能率' }}
-          rows={data.rewards.slice(0, 8)}
+          rows={step10Rows}
         />
       </SectionCard>
 
