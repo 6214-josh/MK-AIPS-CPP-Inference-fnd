@@ -63,6 +63,7 @@ function GanttByCnc({ rows }) {
 
 export default function CncDailySchedulePanel() {
   const [scheduleDate, setScheduleDate] = useState(todayText())
+  const [selectedCnc, setSelectedCnc] = useState('ALL')
   const [summary, setSummary] = useState([])
   const [rows, setRows] = useState([])
   const [ganttRows, setGanttRows] = useState([])
@@ -119,6 +120,7 @@ export default function CncDailySchedulePanel() {
     'sequence_no_on_cnc',
     'work_order_no',
     'product_no',
+    'product_step_count',
     'step_no',
     'step_name',
     'planned_qty',
@@ -135,6 +137,7 @@ export default function CncDailySchedulePanel() {
     sequence_no_on_cnc: '機台順序',
     work_order_no: '製令單',
     product_no: '成品代號',
+    product_step_count: '該製令成品步驟數',
     step_no: '產品步驟',
     step_name: '加工步驟',
     planned_qty: '數量',
@@ -168,6 +171,26 @@ export default function CncDailySchedulePanel() {
     sequence_note: '順序說明',
   }
 
+  const cncOptions = useMemo(() => {
+    const values = new Set()
+    summary.forEach((row) => row.cnc_machine_id && values.add(row.cnc_machine_id))
+    rows.forEach((row) => row.cnc_machine_id && values.add(row.cnc_machine_id))
+    return ['ALL', ...Array.from(values).sort()]
+  }, [summary, rows])
+
+  const filteredSummary = selectedCnc === 'ALL'
+    ? summary
+    : summary.filter((row) => row.cnc_machine_id === selectedCnc)
+
+  const filteredRows = selectedCnc === 'ALL'
+    ? rows
+    : rows.filter((row) => row.cnc_machine_id === selectedCnc)
+
+  const baseGanttRows = ganttRows.length ? ganttRows : rows
+  const filteredGanttRows = selectedCnc === 'ALL'
+    ? baseGanttRows
+    : baseGanttRows.filter((row) => row.cnc_machine_id === selectedCnc)
+
   return (
     <div className="page">
       <PageHeader
@@ -179,6 +202,18 @@ export default function CncDailySchedulePanel() {
           value={scheduleDate}
           onChange={(e) => setScheduleDate(e.target.value)}
         />
+        <select
+          className="cnc-filter-select"
+          value={selectedCnc}
+          onChange={(e) => setSelectedCnc(e.target.value)}
+          title="依 CNC 代號篩選"
+        >
+          {cncOptions.map((cnc) => (
+            <option key={cnc} value={cnc}>
+              {cnc === 'ALL' ? '全部 CNC' : cnc}
+            </option>
+          ))}
+        </select>
         <button onClick={() => load(scheduleDate)} disabled={running}>重新整理</button>
         <button onClick={seedAssumptions} disabled={running}>重建產品加工順序假設</button>
         <button className="primary-btn" onClick={run} disabled={running}>
@@ -189,23 +224,23 @@ export default function CncDailySchedulePanel() {
       {message && <div className="export-message">操作結果：{message}</div>}
 
       <div className="metric-grid">
-        {summary.map((row) => <CncStat key={row.cnc_machine_id} row={row} />)}
+        {filteredSummary.map((row) => <CncStat key={row.cnc_machine_id} row={row} />)}
       </div>
 
       <div className="card">
         <h2>每台 CNC 8 小時排程甘特圖</h2>
         <p className="section-note">
-          橫軸代表 08:00 ~ 16:00，依 CNC 代號分列。紅色代表超過 8 小時產能但仍保留供檢查。
+          橫軸代表 08:00 ~ 16:00，依 CNC 代號分列。可用上方下拉選單只看單一 CNC。紅色代表超過 8 小時產能但仍保留供檢查。同一製令 + 成品代號最多只排 3 個 CNC 加工步驟。
         </p>
-        <GanttByCnc rows={ganttRows.length ? ganttRows : rows} />
+        <GanttByCnc rows={filteredGanttRows} />
       </div>
 
       <div className="card">
-        <h2>依 CNC 代號排列的每日排程結果</h2>
+        <h2>依 CNC 代號排列的每日排程結果 {selectedCnc !== 'ALL' ? `：${selectedCnc}` : ''}</h2>
         <DataTable
           columns={scheduleColumns}
           labels={scheduleLabels}
-          rows={rows}
+          rows={filteredRows}
           defaultPageSize={20}
         />
       </div>
@@ -213,7 +248,7 @@ export default function CncDailySchedulePanel() {
       <div className="card">
         <h2>每個產品在每台 CNC 的加工順序與時間假設</h2>
         <p className="section-note">
-          原則：每個成品代號最多 3 個步驟；每個步驟指定 CNC 代號與加工時間，日排程會依步驟順序與機台可用時間排入。
+          原則：每個「製令單 + 成品代號」最多 3 個步驟；每個步驟指定 CNC 代號與加工時間，日排程會依步驟順序與機台可用時間排入。
         </p>
         <DataTable
           columns={assumptionColumns}
