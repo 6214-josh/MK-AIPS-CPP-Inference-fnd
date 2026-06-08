@@ -2008,41 +2008,83 @@ pre {
 }
 
 
-/* FIX77：強制使用本次上傳的純 IKS Logo，不再顯示截圖縮圖 */
-.sidebar-si-card,
-.login-si-card {
+/* FIX82：CNC 8 小時日排程甘特圖 */
+.cnc-gantt {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 12px;
+}
+
+.cnc-gantt-row {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+.cnc-gantt-label {
+  font-weight: 800;
+  color: #0f172a;
+  text-align: right;
+  padding-right: 8px;
+}
+
+.cnc-gantt-track {
+  position: relative;
+  height: 54px;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  background: linear-gradient(90deg, rgba(148, 163, 184, 0.12) 0 1px, transparent 1px 12.5%);
+  overflow: hidden;
+}
+
+.cnc-gantt-track::before {
+  content: '08:00';
+  position: absolute;
+  left: 8px;
+  top: 4px;
+  font-size: 11px;
+  color: #64748b;
+  z-index: 1;
+}
+
+.cnc-gantt-track::after {
+  content: '16:00';
+  position: absolute;
+  right: 8px;
+  top: 4px;
+  font-size: 11px;
+  color: #64748b;
+  z-index: 1;
+}
+
+.cnc-gantt-bar {
+  position: absolute;
+  top: 19px;
+  height: 28px;
+  border-radius: 8px;
+  background: #2563eb;
+  color: #ffffff;
   display: flex;
   align-items: center;
-  justify-content: left;
-  gap: 12px;
-}
-
-.si-label {
-  font-size: 15px;
-  color: #334155;
+  justify-content: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 6px;
 }
 
-.si-company {
-  color: #1d4ed8;
-  font-weight: 800;
-  white-space: nowrap;
+.cnc-gantt-bar small {
+  font-size: 10px;
+  opacity: 0.9;
 }
 
-.si-logo-image {
-  width: 72px !important;
-  height: 54px !important;
-  object-fit: contain !important;
-  background: #ffffff;
-  border-radius: 6px;
-  padding: 2px;
-}
-
-.login-si-logo {
-  width: 86px !important;
-  height: 66px !important;
-  object-fit: contain !important;
-  background: #ffffff;
-  border-radius: 6px;
-  padding: 2px;
+.cnc-gantt-bar.over-capacity {
+  background: #dc2626;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
 }
