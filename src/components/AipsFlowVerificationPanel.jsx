@@ -155,6 +155,7 @@ export default function AipsFlowVerificationPanel() {
   const step8Rows = step7Rows
   const step9Rows = toArray(currentRun?.run_card_details)
   const step10Rows = toArray(currentRun?.rewards).length ? toArray(currentRun?.rewards) : data.rewards.slice(0, 8)
+  const step11Rows = toArray(currentRun?.shortage_decisions)
 
   const focusedRunCardFeatures = step4RowsFromCurrentRun.length
     ? step4RowsFromCurrentRun
@@ -384,7 +385,33 @@ export default function AipsFlowVerificationPanel() {
         />
       </SectionCard>
 
-      <SectionCard no={11} title="回饋循環：Step10 → Step1 → Step2 → Step3~10" pageName="本頁 feedback summary" ready={Number(data.feedback?.feedback_count || 0) > 0}>
+      <SectionCard no={11} title="缺貨優先智慧排程 DQN" pageName="缺貨優先 DQN / DQN Action / Reward 回饋" ready={step11Rows.length > 0}>
+        <p className="flow-help-text">
+          缺貨優先 DQN 已接在 Prediction Fusion / DQN State 與 Action 決策之間，
+          使用 shortage_risk、line-side stock、due pressure 修正 Q Value，
+          並透過 Step10 Reward 回饋到下一輪 State / Action。
+        </p>
+        <DataTable
+          columns={['decision_id', 'work_order_no', 'product_no', 'cnc_machine_id', 'customer_shortage_risk_score', 'line_side_shortage_qty', 'shortage_qty', 'due_date_remaining_hours', 'selected_action_name', 'selected_q_value', 'decision_reason']}
+          labels={{
+            decision_id: '決策ID',
+            work_order_no: '製令單',
+            product_no: '產品',
+            cnc_machine_id: 'CNC',
+            customer_shortage_risk_score: '缺貨風險',
+            line_side_shortage_qty: '線邊缺料',
+            shortage_qty: '缺貨量',
+            due_date_remaining_hours: '交期剩餘小時',
+            selected_action_name: '缺貨優先 Action',
+            selected_q_value: '修正後 Q Value',
+            decision_reason: '決策原因',
+          }}
+          rows={step11Rows}
+          pageable={false}
+        />
+      </SectionCard>
+
+      <SectionCard no={12} title="回饋循環：Step10 → Step11 → Step1 → Step2 → Step3~10" pageName="本頁 feedback summary" ready={Number(data.feedback?.feedback_count || 0) > 0}>
         <p className="flow-help-text">Reward 不是結束，而是寫回資料工程特徵池，形成下一輪 Step1/Step2 的回饋特徵，讓後續 DQN State / Action 可持續修正。</p>
         <pre className="code-block">{JSON.stringify(data.feedback || {}, null, 2)}</pre>
       </SectionCard>

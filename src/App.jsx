@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 
 import minkingLogo from './assets/minking-logo-brand.png'
+import iksLogo from './assets/iks-logo.png'
 
 import LoginPage from './components/LoginPage.jsx'
 import MeterDashboard from './components/MeterDashboard.jsx'
@@ -9,6 +10,7 @@ import DqnExplainPanel from './components/DqnExplainPanel.jsx'
 import IntegrationOutputPanel from './components/IntegrationOutputPanel.jsx'
 import RealtimeEventPanel from './components/RealtimeEventPanel.jsx'
 import AipsFlowVerificationPanel from './components/AipsFlowVerificationPanel.jsx'
+import ShortagePriorityDqnPanel from './components/ShortagePriorityDqnPanel.jsx'
 
 import {
   Dashboard,
@@ -83,9 +85,10 @@ const MENU_GROUPS = [
       { key: 'model_status', label: '3. 模型檔案狀態', icon: '💾' },
       { key: 'model_optimization', label: '4. 模型優化 / 部署', icon: '🚀' },
       { key: 'aips_flow_verify', label: '5. AIPS 1-10 流程驗證', icon: '🧭' },
-      { key: 'action', label: '6. DQN 排程 Action', icon: '✅' },
-      { key: 'dqn_explain', label: '7. DQN Reward 說明', icon: '🎯' },
-      { key: 'reward', label: '8. Reward 回饋', icon: '🏆' },
+      { key: 'shortage_priority_dqn', label: '6. 缺貨優先 DQN', icon: '🚨' },
+      { key: 'action', label: '7. DQN 排程 Action', icon: '✅' },
+      { key: 'dqn_explain', label: '8. DQN Reward 說明', icon: '🎯' },
+      { key: 'reward', label: '9. Reward 回饋', icon: '🏆' },
     ],
   },
 ]
@@ -113,6 +116,7 @@ const PANEL_MAP = {
   model_status: <ModelStatusPanel />,
   model_optimization: <ModelOptimizationPanel />,
   aips_flow_verify: <AipsFlowVerificationPanel />,
+  shortage_priority_dqn: <ShortagePriorityDqnPanel />,
   action: <DqnActionPanel />,
   dqn_explain: <DqnExplainPanel />,
   reward: <RewardPanel />,
@@ -186,6 +190,11 @@ export default function App() {
             />
           </div>
 
+          <div className="sidebar-si-card">
+            <img className="si-logo-image" src={iksLogo} alt="國興資訊 國興資訊 IKS Logo" />
+            <span className="si-company">國興資訊</span>
+          </div>
+
           <div className="brand-text">
             <div className="brand-title">MK-AIPS</div>
             <div className="brand-subtitle">智慧排程模組</div>
@@ -240,6 +249,7 @@ export default function App() {
 
         <div className="sidebar-footer">
           <small>React 5074 + FastAPI 8999 + PostgreSQL</small>
+          <small>SI：國興資訊</small>
         </div>
       </aside>
 

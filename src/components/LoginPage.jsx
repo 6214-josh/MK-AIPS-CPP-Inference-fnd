@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import minkingLogo from '../assets/minking-logo-brand.png'
+import iksLogo from '../assets/iks-logo.png'
 import apiClient from '../api/apiClient'
 
 export default function LoginPage({ onLoginSuccess }) {
@@ -34,6 +35,10 @@ export default function LoginPage({ onLoginSuccess }) {
     <div className="login-page">
       <div className="login-card">
         <img className="login-logo-image" src={minkingLogo} alt="MinKing Logo" />
+        <div className="login-si-card">
+          <img className="login-si-logo" src={iksLogo} alt="國興資訊 國興資訊 IKS Logo" />
+          <span className="si-company">國興資訊</span>
+        </div>
         <h1>MK-AIPS 智慧排程模組</h1>
         <p>請先登入後再進入系統。</p>
         <div className="login-form">
