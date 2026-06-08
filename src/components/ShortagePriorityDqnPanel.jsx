@@ -92,9 +92,14 @@ export default function ShortagePriorityDqnPanel() {
       apiGet('/aips/shortage-priority-dqn/decisions/latest?limit=100', '/aips/dqn/shortage-priority/decisions/latest?limit=100'),
       apiGet('/aips/shortage-priority-dqn/explain', '/aips/dqn/shortage-priority/explain'),
     ])
-    setSummary(summaryRes.data || {})
-    setDecisions(decisionsRes.data || [])
+    const loadedSummary = summaryRes.data || {}
+    const loadedDecisions = decisionsRes.data || []
+    setSummary(loadedSummary)
+    setDecisions(loadedDecisions)
     setExplain(explainRes.data || {})
+    if (!loadedDecisions.length && Number(loadedSummary.total_count || 0) === 0) {
+      setMessage('目前尚未建立缺貨優先 DQN 決策，請按「執行缺貨優先 DQN」產生資料。')
+    }
   }
 
   async function run() {

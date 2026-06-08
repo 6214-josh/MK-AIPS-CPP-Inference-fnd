@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import apiClient from '../api/apiClient'
 import DataTable from './DataTable.jsx'
 import { PageHeader } from './SimplePanels.jsx'
-import flowImage from '../assets/aips-flow-1-10.jpg'
+import flowImage from '../assets/aips-flow-1-10-with-shortage-dqn.png'
 
 function toArray(data) {
   return Array.isArray(data) ? data : []
@@ -69,6 +69,7 @@ export default function AipsFlowVerificationPanel() {
     states: [],
     actions: [],
     rewards: [],
+    shortageDecisions: [],
   })
 
   async function load() {
@@ -84,6 +85,7 @@ export default function AipsFlowVerificationPanel() {
         states,
         actions,
         rewards,
+        shortageDecisions,
       ] = await Promise.all([
         apiClient.get('/aips/data-engineering/sources').then((r) => toArray(r.data)).catch(() => []),
         apiClient.get('/aips/data-engineering/features/latest?limit=100').then((r) => toArray(r.data)).catch(() => []),
@@ -94,9 +96,17 @@ export default function AipsFlowVerificationPanel() {
         apiClient.get('/aips/states/latest').then((r) => toArray(r.data)).catch(() => []),
         apiClient.get('/aips/dqn/actions/latest').then((r) => toArray(r.data)).catch(() => []),
         apiClient.get('/aips/rewards/latest').then((r) => toArray(r.data)).catch(() => []),
+        apiClient.get('/aips/shortage-priority-dqn/decisions/latest?limit=100').then((r) => toArray(r.data)).catch(async () => {
+          try {
+            const res = await apiClient.get('/aips/dqn/shortage-priority/decisions/latest?limit=100')
+            return toArray(res.data)
+          } catch {
+            return []
+          }
+        }),
       ])
 
-      setData({ sources, features, downstream, feedback, predictions, runCardFeatures, states, actions, rewards })
+      setData({ sources, features, downstream, feedback, predictions, runCardFeatures, states, actions, rewards, shortageDecisions })
     } finally {
       setLoading(false)
     }
@@ -155,7 +165,9 @@ export default function AipsFlowVerificationPanel() {
   const step8Rows = step7Rows
   const step9Rows = toArray(currentRun?.run_card_details)
   const step10Rows = toArray(currentRun?.rewards).length ? toArray(currentRun?.rewards) : data.rewards.slice(0, 8)
-  const step11Rows = toArray(currentRun?.shortage_decisions)
+  const step11Rows = toArray(currentRun?.shortage_decisions).length
+    ? toArray(currentRun?.shortage_decisions)
+    : data.shortageDecisions.slice(0, 12)
 
   const focusedRunCardFeatures = step4RowsFromCurrentRun.length
     ? step4RowsFromCurrentRun
