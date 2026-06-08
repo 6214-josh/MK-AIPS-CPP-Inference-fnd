@@ -194,7 +194,6 @@ export default function App() {
           </div>
 
           <div className="sidebar-si-card">
-            <span className="si-label">SI</span>
             <img className="si-logo-image" src={iksLogo} alt="國興資訊 IKS Logo" />
             <span className="si-company">國興資訊</span>
           </div>

@@ -1921,7 +1921,7 @@ pre {
 .sidebar-si-card,
 .login-si-card {
   display: flex;
-  align-items: center;
+  align-items: left;
   gap: 12px;
   border: 1px solid #bfdbfe;
   background: #eff6ff;
@@ -1932,13 +1932,13 @@ pre {
 .sidebar-si-card {
   margin: 0 10px 14px 10px;
   padding: 8px 10px;
-  justify-content: center;
+  justify-content: left;
 }
 
 .login-si-card {
   margin: 12px 0 20px;
   padding: 10px 12px;
-  justify-content: center;
+  justify-content: left;
 }
 
 .si-label {
