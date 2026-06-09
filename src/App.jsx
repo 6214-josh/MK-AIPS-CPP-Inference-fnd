@@ -12,6 +12,7 @@ import RealtimeEventPanel from './components/RealtimeEventPanel.jsx'
 import AipsFlowVerificationPanel from './components/AipsFlowVerificationPanel.jsx'
 import ShortagePriorityDqnPanel from './components/ShortagePriorityDqnPanel.jsx'
 import CncDailySchedulePanel from './components/CncDailySchedulePanel.jsx'
+import CncDashboardPanel from './components/CncDashboardPanel.jsx'
 
 import {
   Dashboard,
@@ -70,6 +71,7 @@ const MENU_GROUPS = [
     icon: '⚙️',
     children: [
       { key: 'meter', label: 'CNC 智慧電表', icon: '⚡' },
+      { key: 'cnc_dashboard', label: 'CNC Dashboard', icon: '🖥️' },
       { key: 'wo', label: 'ERP 製令單', icon: '📋' },
       { key: 'run_card', label: '製令流程卡 / AI', icon: '🧾' },
       { key: 'inventory', label: 'WMS 線邊庫', icon: '📦' },
@@ -107,6 +109,7 @@ const PANEL_MAP = {
   hw_logistics: <LineSideLogisticsSimulator />,
 
   meter: <MeterDashboard />,
+  cnc_dashboard: <CncDashboardPanel />,
   wo: <WorkOrderPanel />,
   run_card: <RunCardPanel />,
   inventory: <InventoryPanel />,
@@ -252,7 +255,6 @@ export default function App() {
 
         <div className="sidebar-footer">
           <small>React 5074 + FastAPI 8999 + PostgreSQL</small>
-          <small>SI：國興資訊</small>
         </div>
       </aside>
 

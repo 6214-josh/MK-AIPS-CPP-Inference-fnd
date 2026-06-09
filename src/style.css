@@ -1921,7 +1921,7 @@ pre {
 .sidebar-si-card,
 .login-si-card {
   display: flex;
-  align-items: left;
+  align-items: center;
   gap: 12px;
   border: 1px solid #bfdbfe;
   background: #eff6ff;
@@ -2106,4 +2106,124 @@ pre {
 .cnc-filter-select:focus {
   border-color: #2563eb;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+/* FIX85：CNC Dashboard，即時狀態監控，與日排程統計區隔 */
+.cnc-dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.cnc-dashboard-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: 0 14px 35px rgba(15, 23, 42, 0.08);
+  border-left: 6px solid #94a3b8;
+}
+
+.cnc-dashboard-card.status-running,
+.cnc-dashboard-card.status-scheduled {
+  border-left-color: #22c55e;
+}
+
+.cnc-dashboard-card.status-idle,
+.cnc-dashboard-card.status-no_data {
+  border-left-color: #f97316;
+}
+
+.cnc-dashboard-card.status-alarm {
+  border-left-color: #dc2626;
+}
+
+.cnc-dashboard-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.cnc-status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 800;
+  background: #dcfce7;
+  color: #166534;
+}
+
+.cnc-status-pill.level-high {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.cnc-status-pill.level-medium {
+  background: #ffedd5;
+  color: #9a3412;
+}
+
+.cnc-status-pill.level-low {
+  background: #e0f2fe;
+  color: #075985;
+}
+
+.cnc-dashboard-kv-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.cnc-dashboard-kv-grid div {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 10px;
+}
+
+.cnc-dashboard-kv-grid span {
+  display: block;
+  color: #64748b;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.cnc-dashboard-kv-grid b {
+  color: #0f172a;
+  font-size: 14px;
+}
+
+.cnc-dashboard-reason {
+  margin-top: 12px;
+  color: #475569;
+  font-weight: 700;
+}
+
+.cnc-dashboard-diff-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.cnc-dashboard-diff-grid div {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.cnc-dashboard-diff-grid b {
+  color: #0f172a;
+}
+
+.cnc-dashboard-diff-grid p {
+  margin: 8px 0 0;
+  color: #64748b;
+  line-height: 1.7;
 }
