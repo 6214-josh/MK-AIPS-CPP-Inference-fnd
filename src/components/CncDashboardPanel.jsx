@@ -27,6 +27,29 @@ function pad2(value) {
   return String(value).padStart(2, '0')
 }
 
+function stableKey(prefix, row, index) {
+  const parts = [
+    row?.reward_log_id,
+    row?.reward_id,
+    row?.schedule_id,
+    row?.action_id,
+    row?.state_id,
+    row?.meter_data_id,
+    row?.feature_id,
+    row?.work_order_no,
+    row?.product_no,
+    row?.product_code,
+    row?.cnc_machine_id,
+    row?.machine_id,
+    row?.operation_seq,
+    row?.decision_step_no,
+    row?.schedule_run_id,
+    row?.calculated_at,
+    row?.reward_time,
+  ].filter((item) => item !== undefined && item !== null && item !== '')
+  return `${prefix}-${parts.join('-') || 'row'}-${index}`
+}
+
 function todayText() {
   return new Date().toISOString().slice(0, 10)
 }
@@ -158,7 +181,7 @@ function WarGantt({ rows, cards }) {
         const items = grouped[cnc] || []
         const card = cardMap[cnc] || {}
         return (
-          <div className="war-gantt-row" key={cnc}>
+          <div className="war-gantt-row" key={`gantt-row-${cnc}`}>
             <div className="war-gantt-machine">{cnc}</div>
             <div className="war-gantt-state">
               <StatusDot status={card.status} />
@@ -168,7 +191,7 @@ function WarGantt({ rows, cards }) {
               <div className="war-now-line" />
               {items.map((item, index) => (
                 <div
-                  key={item.schedule_id || `${cnc}-${index}`}
+                  key={stableKey(`gantt-bar-${cnc}`, item, index)}
                   className={`war-gantt-bar ${item.schedule_status === 'OVER_CAPACITY' ? 'danger' : ''} ${item.is_ai_prediction ? 'predicted' : ''}`}
                   style={{
                     left: `${Math.max(0, Math.min(Number(item.left_percent || 0), 99))}%`,
@@ -222,7 +245,7 @@ function Heatmap({ rows }) {
         const rate = Number(row.utilization_rate || 0)
         const tone = rate >= 90 ? 'hot' : rate >= 70 ? 'warm' : rate <= 45 ? 'cool' : 'ok'
         return (
-          <div key={`${row.cnc_machine_id}-${index}`} className={`war-heatmap-cell ${tone}`}>
+          <div key={stableKey("heatmap", row, index)} className={`war-heatmap-cell ${tone}`}>
             <b>{row.cnc_machine_id}</b>
             <span>{formatPercent(rate, 0)}</span>
             <small>{row.status === 'ALARM' ? '異常' : row.ai_judgement}</small>
@@ -245,8 +268,8 @@ function SimpleTable({ columns, labels, rows, max = 8, emptyText = '目前沒有
         </thead>
         <tbody>
           {visibleRows.length ? visibleRows.map((row, index) => (
-            <tr key={`${row.id || row.schedule_id || row.reward_id || row.reward_log_id || row.action_id || row.work_order_no || row.cnc_machine_id || row.product_no || "row"}-${index}`}>
-              {columns.map((c) => <td key={c}>{row[c] ?? '-'}</td>)}
+            <tr key={stableKey("table-row", row, index)}>
+              {columns.map((c, colIndex) => <td key={`cell-${index}-${colIndex}-${c}`}>{row[c] ?? '-'}</td>)}
             </tr>
           )) : (
             <tr><td colSpan={columns.length}>{emptyText}</td></tr>
@@ -355,7 +378,7 @@ function RewardTrendChart({ rows, events }) {
         ))}
 
         {eventRows.map((event) => (
-          <g key={`event-${event.markerNo}`}>
+          <g key={`event-${event.markerNo}-${event.point.index}-${event.point.x}`}>
             <line
               x1={event.point.x}
               y1={topPad + 4}
@@ -489,6 +512,28 @@ export default function CncDashboardPanel() {
     scope: 'ALL',
     actionType: 'ALL',
   })
+  const [rewardDraftFilters, setRewardDraftFilters] = useState({
+    timeRange: '24h',
+    runId: 'ALL',
+    scope: 'ALL',
+    actionType: 'ALL',
+  })
+
+  function buildRewardDashboardQuery(filters = rewardFilters) {
+    const params = new URLSearchParams({ limit: '120' })
+    if (filters.timeRange && filters.timeRange !== 'ALL') params.set('time_range', filters.timeRange)
+    if (filters.runId && filters.runId !== 'ALL') params.set('schedule_run_id', filters.runId)
+    if (filters.scope && filters.scope !== 'ALL') params.set('reward_scope', filters.scope)
+    if (filters.actionType && filters.actionType !== 'ALL') params.set('action_type', filters.actionType)
+    return params.toString()
+  }
+
+  async function loadRewardLogDashboard(filters = rewardFilters) {
+    const query = buildRewardDashboardQuery(filters)
+    const res = await apiClient.get(`/aips/reward-log/dashboard?${query}`)
+    setRewardLogDashboard(res.data || { summary: {}, logs: [], distribution: [], composition: [], timeline: [] })
+    return res.data
+  }
 
   async function load(targetDate = scheduleDate) {
     setLoading(true)
@@ -496,7 +541,7 @@ export default function CncDashboardPanel() {
     const requests = await Promise.allSettled([
       apiClient.get(`/aips/cnc-dashboard/summary?schedule_date=${targetDate}`),
       apiClient.get('/aips/rewards/latest?limit=120'),
-      apiClient.get('/aips/reward-log/dashboard?limit=120'),
+      apiClient.get(`/aips/reward-log/dashboard?${buildRewardDashboardQuery({ timeRange: 'ALL', runId: 'ALL', scope: 'ALL', actionType: 'ALL' })}`),
       apiClient.get('/work-orders/snapshots/latest'),
       apiClient.get('/inventory/snapshots/latest'),
       apiClient.get('/aips/dqn/actions/latest?limit=120'),
@@ -837,6 +882,37 @@ export default function CncDashboardPanel() {
     ]
   }, [filteredRewardRows])
 
+  async function applyRewardFilters() {
+    const nextFilters = { ...rewardDraftFilters }
+    setRewardFilters(nextFilters)
+    setLoading(true)
+    try {
+      const payload = await loadRewardLogDashboard(nextFilters)
+      const count = Array.isArray(payload?.logs) ? payload.logs.length : filteredRewardRows.length
+      setMessage(`Reward 查詢條件已套用：目前符合 ${count} 筆。`)
+    } catch (err) {
+      setMessage(err?.response?.data?.detail || err?.message || 'Reward 查詢失敗')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function resetRewardFilters() {
+    const defaults = { timeRange: '24h', runId: 'ALL', scope: 'ALL', actionType: 'ALL' }
+    setRewardDraftFilters(defaults)
+    setRewardFilters(defaults)
+    setLoading(true)
+    try {
+      const payload = await loadRewardLogDashboard(defaults)
+      const count = Array.isArray(payload?.logs) ? payload.logs.length : 0
+      setMessage(`Reward 查詢條件已重置：目前顯示 ${count} 筆。`)
+    } catch (err) {
+      setMessage(err?.response?.data?.detail || err?.message || 'Reward 查詢重置失敗')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   function renderOverviewTab() {
     return (
       <div className="war-content-stack">
@@ -1028,7 +1104,7 @@ export default function CncDashboardPanel() {
               <div className="war-filter-form">
                 <label>
                   <span>時間範圍</span>
-                  <select value={rewardFilters.timeRange} onChange={(e) => setRewardFilters((prev) => ({ ...prev, timeRange: e.target.value }))}>
+                  <select value={rewardDraftFilters.timeRange} onChange={(e) => setRewardDraftFilters((prev) => ({ ...prev, timeRange: e.target.value }))}>
                     <option value="6h">最近 6 小時</option>
                     <option value="12h">最近 12 小時</option>
                     <option value="24h">最近 24 小時</option>
@@ -1038,14 +1114,14 @@ export default function CncDashboardPanel() {
                 </label>
                 <label>
                   <span>排程批次 (Run ID)</span>
-                  <select value={rewardFilters.runId} onChange={(e) => setRewardFilters((prev) => ({ ...prev, runId: e.target.value }))}>
+                  <select value={rewardDraftFilters.runId} onChange={(e) => setRewardDraftFilters((prev) => ({ ...prev, runId: e.target.value }))}>
                     <option value="ALL">全部</option>
-                    {rewardRunOptions.map((item) => <option key={item} value={item}>{item}</option>)}
+                    {rewardRunOptions.map((item, index) => <option key={`run-${item}-${index}`} value={item}>{item}</option>)}
                   </select>
                 </label>
                 <label>
                   <span>Reward Scope</span>
-                  <select value={rewardFilters.scope} onChange={(e) => setRewardFilters((prev) => ({ ...prev, scope: e.target.value }))}>
+                  <select value={rewardDraftFilters.scope} onChange={(e) => setRewardDraftFilters((prev) => ({ ...prev, scope: e.target.value }))}>
                     <option value="ALL">全部</option>
                     <option value="WORK_ORDER">工單</option>
                     <option value="MACHINE">機台</option>
@@ -1059,14 +1135,14 @@ export default function CncDashboardPanel() {
                 </label>
                 <label>
                   <span>Action 類型</span>
-                  <select value={rewardFilters.actionType} onChange={(e) => setRewardFilters((prev) => ({ ...prev, actionType: e.target.value }))}>
+                  <select value={rewardDraftFilters.actionType} onChange={(e) => setRewardDraftFilters((prev) => ({ ...prev, actionType: e.target.value }))}>
                     <option value="ALL">全部</option>
-                    {rewardActionTypeOptions.map((item) => <option key={item} value={item}>{item}</option>)}
+                    {rewardActionTypeOptions.map((item, index) => <option key={`action-type-${item}-${index}`} value={item}>{item}</option>)}
                   </select>
                 </label>
                 <div className="war-filter-actions">
-                  <button type="button" className="primary-btn" onClick={() => setRewardFilters((prev) => ({ ...prev }))}>查詢</button>
-                  <button type="button" onClick={() => setRewardFilters({ timeRange: '24h', runId: 'ALL', scope: 'ALL', actionType: 'ALL' })}>重置</button>
+                  <button type="button" className="primary-btn" onClick={applyRewardFilters}>查詢</button>
+                  <button type="button" onClick={resetRewardFilters}>重置</button>
                 </div>
               </div>
             </section>
@@ -1145,7 +1221,7 @@ export default function CncDashboardPanel() {
         {sectionTitle('機台管理', '查看每台 CNC 即時狀態、目前工單、負載、電表特徵與風險。')}
         <div className="war-machine-grid">
           {filteredCards.map((card, index) => (
-            <div key={`${card.cnc_machine_id}-${index}`} className="war-panel war-machine-card">
+            <div key={stableKey("machine-card", card, index)} className="war-panel war-machine-card">
               <div className="war-machine-head">
                 <div>
                   <h3>{card.cnc_machine_id}</h3>
