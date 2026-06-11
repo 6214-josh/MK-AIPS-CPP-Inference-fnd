@@ -916,7 +916,7 @@ export default function CncDashboardPanel() {
   function renderOverviewTab() {
     return (
       <div className="war-content-stack">
-        {sectionTitle('即時總覽', '把 14 台 CNC 狀態、排程風險、物料與 Reward 學習結果整合為管理總覽。')}
+        {sectionTitle('', '把 14 台 CNC 狀態、排程風險、物料與 Reward 學習結果整合為管理總覽。')}
         <div className="war-overview-grid">
           <div className="war-panel">
             <h3>今日核心 KPI</h3>
@@ -1071,7 +1071,7 @@ export default function CncDashboardPanel() {
     const stats = filteredRewardStats
     return (
       <div className="war-content-stack">
-        {sectionTitle('DQN Reward 分析', '依 Word 設計：Reward Log 以 DQN 排程決策事件為核心，Key = schedule_run_id + decision_step_no + reward_scope + work_order_no + operation_seq + machine_id + action_code。')}
+        {sectionTitle('', 'Reward Log 以 DQN 排程決策事件為核心，Key = schedule_run_id + decision_step_no + reward_scope + work_order_no + operation_seq + machine_id + action_code。')}
 
         <div className="war-reward-layout">
           <aside className="war-reward-sidebar">
@@ -1184,7 +1184,7 @@ export default function CncDashboardPanel() {
     const delayedOrders = uniqueWorkOrders.filter((row) => row.delay_risk_flag === true || row.delay_risk_flag === 'true').length
     return (
       <div className="war-content-stack">
-        {sectionTitle('工單管理', '查看工單數量、優先權、交期與對應機台，支援排程追蹤。')}
+        {sectionTitle('', '查看工單數量、優先權、交期與對應機台，支援排程追蹤。')}
         <div className="war-card-grid war-card-grid-4">
           <KpiTile label="工單總數" value={`${uniqueWorkOrders.length} 張`} sub="今日可見工單" tone="good" />
           <KpiTile label="高優先工單" value={`${highPriority} 張`} sub="priority >= 8" tone="warn" />
@@ -1218,7 +1218,7 @@ export default function CncDashboardPanel() {
   function renderMachinesTab() {
     return (
       <div className="war-content-stack">
-        {sectionTitle('機台管理', '查看每台 CNC 即時狀態、目前工單、負載、電表特徵與風險。')}
+        {sectionTitle('', '查看每台 CNC 即時狀態、目前工單、負載、電表特徵與風險。')}
         <div className="war-machine-grid">
           {filteredCards.map((card, index) => (
             <div key={stableKey("machine-card", card, index)} className="war-panel war-machine-card">
@@ -1267,7 +1267,7 @@ export default function CncDashboardPanel() {
     const riskyOrders = (data.risk_rows || []).filter((row) => String(row.risk_level || '').includes('高') || String(row.risk_level || '').includes('中'))
     return (
       <div className="war-content-stack">
-        {sectionTitle('物料管理', '結合線邊庫、安全庫存與缺料風險，避免排程看起來可行但現場缺料停線。')}
+        {sectionTitle('', '結合線邊庫、安全庫存與缺料風險，避免排程看起來可行但現場缺料停線。')}
         <div className="war-card-grid war-card-grid-4">
           <KpiTile label="線邊庫筆數" value={`${filteredLineStock.length} 筆`} sub="Dashboard 摘要資料" tone="good" />
           <KpiTile label="缺料品項" value={`${shortageCount} 筆`} sub="需優先補料" tone="bad" />
@@ -1302,7 +1302,7 @@ export default function CncDashboardPanel() {
     const highRisk = toolRows.filter((row) => row.risk_level === '高').length
     return (
       <div className="war-content-stack">
-        {sectionTitle('刀具管理', '依刀具剩餘壽命、負載與異常風險，調整派工與保養節奏。')}
+        {sectionTitle('', '依刀具剩餘壽命、負載與異常風險，調整派工與保養節奏。')}
         <div className="war-card-grid war-card-grid-4">
           <KpiTile label="刀具監控數" value={`${toolRows.length} 支`} sub="每台機台對應主要刀具" tone="good" />
           <KpiTile label="高風險刀具" value={`${highRisk} 支`} sub="建議立即檢查 / 更換" tone="bad" />
@@ -1325,7 +1325,7 @@ export default function CncDashboardPanel() {
   function renderReportsTab() {
     return (
       <div className="war-content-stack">
-        {sectionTitle('報表分析', '整理 AI 重排效益、Reward 趨勢與重要 KPI，作為決策與簡報依據。')}
+        {sectionTitle('', '整理 AI 重排效益、Reward 趨勢與重要 KPI，作為決策與簡報依據。')}
         <div className="war-card-grid war-card-grid-4">
           <KpiTile label="平均 Reward" value={`${formatNumber(rewardStats.avgScore, 1)} / 100`} sub="排程品質總分" tone="good" />
           <KpiTile label="平均稼動率" value={formatPercent(kpi.realtime_utilization_rate || 0, 1)} sub="Dashboard KPI" tone="good" />
@@ -1359,7 +1359,7 @@ export default function CncDashboardPanel() {
   function renderMaintenanceTab() {
     return (
       <div className="war-content-stack">
-        {sectionTitle('預測維護', '結合電表 THD、三相不平衡、負載與刀具壽命，提前識別異常機台。')}
+        {sectionTitle('', '結合電表 THD、三相不平衡、負載與刀具壽命，提前識別異常機台。')}
         <div className="war-card-grid war-card-grid-4">
           <KpiTile label="高風險機台" value={`${filteredCards.filter((card) => Number(card.abnormal_probability || 0) >= 0.75).length} 台`} sub="應立即檢查" tone="bad" />
           <KpiTile label="中風險機台" value={`${filteredCards.filter((card) => Number(card.abnormal_probability || 0) >= 0.45 && Number(card.abnormal_probability || 0) < 0.75).length} 台`} sub="建議保養" tone="warn" />
@@ -1393,7 +1393,7 @@ export default function CncDashboardPanel() {
   function renderSettingsTab() {
     return (
       <div className="war-content-stack">
-        {sectionTitle('系統設定', '顯示目前系統版本、資料來源、關鍵模組與儀表板設定。')}
+        {sectionTitle('', '顯示目前系統版本、資料來源、關鍵模組與儀表板設定。')}
         <div className="war-bottom-grid war-bottom-grid-2">
           <section className="war-panel">
             <h3>系統基本資訊</h3>
@@ -1466,8 +1466,7 @@ export default function CncDashboardPanel() {
 
       <div className="war-toolbar">
         <div>
-          <h2>{DASHBOARD_TABS.find((item) => item.key === activeTab)?.label || 'AI 排程看板'} <span>{activeTab === 'reward' ? '(DQN Reward / Log)' : '(AIPS 14 台 CNC)'}</span></h2>
-          <p>整合 CNC、ERP、WMS、DQN 與 Reward 閉環學習，避免白底低對比造成資訊難以辨識。</p>
+          <h2>{DASHBOARD_TABS.find((item) => item.key === activeTab)?.label || 'AI 排程看板'} <span>{activeTab === 'reward' ? '' : ''}</span></h2>
         </div>
         <div className="war-actions">
           <input type="date" value={scheduleDate} onChange={(e) => setScheduleDate(e.target.value)} />

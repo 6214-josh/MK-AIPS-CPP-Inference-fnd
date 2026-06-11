@@ -3,9 +3,24 @@ import apiClient from '../api/apiClient'
 import DataTable from './DataTable.jsx'
 import { PageHeader, showError } from './SimplePanels.jsx'
 
+const DASHBOARD_CNC_OPTIONS = ['ALL', ...Array.from({ length: 14 }, (_, i) => `CNC-${String(i + 1).padStart(2, '0')}`)]
+const DASHBOARD_SUGGESTION_PAGE_SIZE = 5
+
 export function Dashboard() {
   const [summary, setSummary] = useState({})
+  const [selectedSuggestionCnc, setSelectedSuggestionCnc] = useState('ALL')
+  const [suggestionPage, setSuggestionPage] = useState(1)
   const latestActions = summary.latest_actions || []
+  const filteredLatestActions = selectedSuggestionCnc === 'ALL'
+    ? latestActions
+    : latestActions.filter((item) => (
+        item.original_cnc_machine_id === selectedSuggestionCnc
+        || item.suggested_cnc_machine_id === selectedSuggestionCnc
+        || item.cnc_machine_id === selectedSuggestionCnc
+      ))
+  const suggestionTotalPages = Math.max(1, Math.ceil(filteredLatestActions.length / DASHBOARD_SUGGESTION_PAGE_SIZE))
+  const safeSuggestionPage = Math.min(suggestionPage, suggestionTotalPages)
+  const pagedLatestActions = filteredLatestActions.slice((safeSuggestionPage - 1) * DASHBOARD_SUGGESTION_PAGE_SIZE, safeSuggestionPage * DASHBOARD_SUGGESTION_PAGE_SIZE)
   async function load(){ setSummary((await apiClient.get('/dashboard/summary')).data || {}) }
   const [flowMessage, setFlowMessage] = useState('')
   async function runFullFlow(){
@@ -19,9 +34,10 @@ export function Dashboard() {
     } catch (err) {
       // 若後端尚未套用 FIX64，保留舊流程當 fallback，避免按鈕完全失效。
       await apiClient.post('/meter/electric/demo-all').catch(()=>{})
-      await apiClient.post('/meter/features/calculate/CNC-01').catch(()=>{})
-      await apiClient.post('/meter/features/calculate/CNC-02').catch(()=>{})
-      await apiClient.post('/meter/features/calculate/CNC-03').catch(()=>{})
+      for (let i = 1; i <= 14; i += 1) {
+        const cnc = `CNC-${String(i).padStart(2, '0')}`
+        await apiClient.post(`/meter/features/calculate/${cnc}`).catch(()=>{})
+      }
       await apiClient.post('/aips/states/build').catch(()=>{})
       await apiClient.post('/aips/dqn/generate-actions').catch(()=>{})
       await apiClient.post('/aips/predictions/run').catch(()=>{})
@@ -47,6 +63,7 @@ export function Dashboard() {
   </div>}<div className="metric-grid dashboard-metric-grid">{[
     ['ERP 已處理', summary.erp_processed_count, `AIPS 已處理 / 已回傳 ERP，總數 ${summary.erp_total_count || summary.work_order_progress_snapshot || 0}`],
     ['ERP 未處理', summary.erp_unprocessed_count, `ERP 已送入、尚未完成處理，總數 ${summary.erp_total_count || summary.work_order_progress_snapshot || 0}`],
+    ['CNC 機台總數', summary.cnc_machine_count || 14, 'CNC-01 ~ CNC-14'],
     ['CNC 電表資料', summary.cnc_meter_raw_data, '智慧電表原始回傳筆數'],
     ['WMS 線邊庫', summary.line_side_inventory_snapshot, '線邊庫庫存快照筆數'],
     ['DQN 排程Action', summary.aips_dqn_action_log, 'AI 已產生的建議數']
@@ -72,25 +89,41 @@ export function Dashboard() {
   </div>
   </div>
   <div className="card">
-  <h2>最新建議</h2>
-  <div className="action-list">{latestActions.length===0?<div className="action-card">目前尚未產生 DQN 建議，請先按「一鍵執行 AIPS 流程」。</div>:latestActions.map(a=>
-  <div key={a.action_id} className={`action-card ${actionClass(a)}`}>
+  <div className="card-title-row">
+    <h2>最新建議</h2>
+    <div className="latest-action-filter">
+      <span>依 CNC 篩選</span>
+      <select value={selectedSuggestionCnc} onChange={e=>{setSelectedSuggestionCnc(e.target.value); setSuggestionPage(1)}}>
+        {DASHBOARD_CNC_OPTIONS.map((cnc, index) => <option key={`dashboard-suggestion-cnc-${cnc}-${index}`} value={cnc}>{cnc === 'ALL' ? '全選 / 全部 CNC' : cnc}</option>)}
+      </select>
+    </div>
+  </div>
+  <div className="action-list">{filteredLatestActions.length===0?<div className="action-card">目前此 CNC 尚未產生 DQN 建議，請先按「一鍵執行 AIPS 流程」。</div>:pagedLatestActions.map((a, index)=>
+  <div key={`latest-action-${a.action_id || a.work_order_no || a.original_cnc_machine_id || 'row'}-${safeSuggestionPage}-${index}`} className={`action-card ${actionClass(a)}`}>
   <div className="action-title">
   <div>{a.action_name||a.action_type}
   </div>
   <span className="badge">信心 {toPercent(a.action_confidence_score)}
   </span>
   </div>
-  <div className="action-meta">製令單：{a.work_order_no||'-'}　機台：{a.original_cnc_machine_id||'-'}　預估 OEE 改善：{toPercent(a.expected_oee_improvement_rate)}
+  <div className="action-meta">製令單：{a.work_order_no||'-'}　機台：{a.original_cnc_machine_id||'-'}　建議機台：{a.suggested_cnc_machine_id||'-'}　預估 OEE 改善：{toPercent(a.expected_oee_improvement_rate)}
   </div>
   <div className="action-reason">{a.action_reason||'尚無建議原因'}
   </div>
   </div>)}
   </div>
+  {filteredLatestActions.length > DASHBOARD_SUGGESTION_PAGE_SIZE && <div className="latest-action-pagination">
+    <span>顯示 {(safeSuggestionPage - 1) * DASHBOARD_SUGGESTION_PAGE_SIZE + 1} - {Math.min(safeSuggestionPage * DASHBOARD_SUGGESTION_PAGE_SIZE, filteredLatestActions.length)} 筆，共 {filteredLatestActions.length} 筆</span>
+    <button disabled={safeSuggestionPage <= 1} onClick={()=>setSuggestionPage(1)}>第一頁</button>
+    <button disabled={safeSuggestionPage <= 1} onClick={()=>setSuggestionPage(p=>Math.max(1,p-1))}>上一頁</button>
+    <b>{safeSuggestionPage} / {suggestionTotalPages}</b>
+    <button disabled={safeSuggestionPage >= suggestionTotalPages} onClick={()=>setSuggestionPage(p=>Math.min(suggestionTotalPages,p+1))}>下一頁</button>
+    <button disabled={safeSuggestionPage >= suggestionTotalPages} onClick={()=>setSuggestionPage(suggestionTotalPages)}>最後頁</button>
+  </div>}
   </div>
   <div className="card">
   <h2>技術資料表</h2>
-  <DataTable columns={actionColumns} rows={latestActions} labels={actionLabels}/>
+  <DataTable columns={actionColumns} rows={filteredLatestActions} labels={actionLabels}/>
   </div>
   </div>
 }

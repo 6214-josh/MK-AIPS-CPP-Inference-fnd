@@ -38,15 +38,15 @@ function GanttByCnc({ rows, cncCodes = ALL_CNC_CODES }) {
 
   return (
     <div className="cnc-gantt">
-      {cncCodes.map((cnc) => {
+      {cncCodes.map((cnc, cncIndex) => {
         const items = grouped[cnc] || []
         return (
-        <div className="cnc-gantt-row" key={cnc}>
+        <div className="cnc-gantt-row" key={`daily-gantt-row-${cnc}-${cncIndex}`}>
           <div className="cnc-gantt-label">{cnc}</div>
           <div className="cnc-gantt-track">
-            {items.map((item) => (
+            {items.map((item, itemIndex) => (
               <div
-                key={item.schedule_id}
+                key={`daily-gantt-bar-${item.schedule_id || item.work_order_no || item.product_no || cnc}-${itemIndex}`}
                 className={`cnc-gantt-bar ${item.schedule_status === 'SCHEDULED' ? '' : 'over-capacity'}`}
                 style={{
                   left: `${item.left_percent}%`,
@@ -229,7 +229,7 @@ export default function CncDailySchedulePanel() {
       {message && <div className="export-message">操作結果：{message}</div>}
 
       <div className="metric-grid">
-        {filteredSummary.map((row) => <CncStat key={row.cnc_machine_id} row={row} />)}
+        {filteredSummary.map((row, index) => <CncStat key={`cnc-stat-${row.cnc_machine_id}-${index}`} row={row} />)}
       </div>
 
       <div className="card">

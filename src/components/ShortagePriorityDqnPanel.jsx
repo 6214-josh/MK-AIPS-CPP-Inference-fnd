@@ -146,8 +146,8 @@ export default function ShortagePriorityDqnPanel() {
       <div className="card shortage-priority-banner">
         <h2>模組定位</h2>
         <div className="priority-flow">
-          {(explain.positioning || []).map((item) => (
-            <div key={item} className="priority-box">{item}</div>
+          {(explain.positioning || []).map((item, index) => (
+            <div key={`priority-position-${item}-${index}`} className="priority-box">{item}</div>
           ))}
         </div>
         <p className="section-note">
@@ -184,7 +184,7 @@ export default function ShortagePriorityDqnPanel() {
       <div className="card">
         <h2>State 特徵</h2>
         <div className="tag-list">
-          {(explain.state_features || []).map((item) => <span key={item} className="tag-pill">{item}</span>)}
+          {(explain.state_features || []).map((item, index) => <span key={`state-feature-${item}-${index}`} className="tag-pill">{item}</span>)}
         </div>
       </div>
     </div>

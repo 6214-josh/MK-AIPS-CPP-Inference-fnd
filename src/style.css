@@ -4389,3 +4389,141 @@ pre {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* FIX101: CNC simulator select + Dashboard latest suggestion filter */
+.meter-sim-toolbar,
+.latest-action-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.meter-sim-toolbar .select-control,
+.latest-action-filter select {
+  min-width: 160px;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #0f172a;
+  padding: 0 12px;
+  font-weight: 700;
+}
+
+.meter-sim-all-btn {
+  min-width: 128px;
+}
+
+.card-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.card-title-row h2 {
+  margin: 0;
+}
+
+.latest-action-filter span {
+  color: #64748b;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+@media (max-width: 768px) {
+  .meter-sim-toolbar,
+  .latest-action-filter,
+  .card-title-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+
+  .meter-sim-toolbar .select-control,
+  .latest-action-filter select,
+  .meter-sim-toolbar button,
+  .meter-sim-all-btn {
+    width: 100%;
+  }
+}
+
+
+/* FIX102: CNC + smart meter simulator dropdown filters and dashboard latest suggestion paging */
+.cnc-table-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.cnc-table-filter span {
+  color: #64748b;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.cnc-table-filter select {
+  min-width: 150px;
+  min-height: 38px;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #0f172a;
+  padding: 0 12px;
+  font-weight: 700;
+}
+
+.latest-action-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(148, 163, 184, .2);
+}
+
+.latest-action-pagination span {
+  margin-right: auto;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.latest-action-pagination b {
+  min-width: 56px;
+  text-align: center;
+  color: #0f172a;
+  background: #eef2ff;
+  border-radius: 999px;
+  padding: 8px 12px;
+}
+
+.latest-action-pagination button:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .cnc-table-filter,
+  .latest-action-pagination {
+    display: grid;
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+
+  .cnc-table-filter select,
+  .latest-action-pagination button,
+  .latest-action-pagination b {
+    width: 100%;
+  }
+
+  .latest-action-pagination span {
+    margin-right: 0;
+  }
+}

@@ -50,24 +50,47 @@ export function NfcQrTagSimulator(){
 }
 
 export function CncMeterSimulator(){
+  const CNC_OPTIONS = ['ALL', ...Array.from({ length: 14 }, (_, i) => `CNC-${String(i + 1).padStart(2, '0')}`)]
   const [simMeters,setSimMeters]=useState([]),[links,setLinks]=useState([]),[rawRows,setRawRows]=useState([]),[features,setFeatures]=useState([])
+  const [simulateCnc,setSimulateCnc]=useState('CNC-01')
+  const [simMeterCnc,setSimMeterCnc]=useState('ALL')
+  const [linkCnc,setLinkCnc]=useState('ALL')
+  const [rawCnc,setRawCnc]=useState('ALL')
+  const [featureCnc,setFeatureCnc]=useState('ALL')
   const simColumns=['sim_meter_id','cnc_machine_id','meter_id','device_ip','protocol_type','modbus_unit_id','power_kw','demand_kw','thd_current','machine_status','online_flag']
   const linkColumns=['cnc_machine_id','meter_id','device_ip','protocol_type','modbus_unit_id','connected_flag','machine_status','power_kw','demand_kw','thd_current','estimated_machine_status']
   const rawColumns=['meter_data_id','collect_time','cnc_machine_id','power_kw','demand_kw','thd_current','device_ip']
   const featureColumns=['feature_id','feature_time','cnc_machine_id','avg_power_kw_5min','thd_current_avg','estimated_machine_status','machine_abnormal_power_flag']
+  const byCnc = (rows, cnc) => cnc === 'ALL' ? rows : (rows || []).filter(row => row.cnc_machine_id === cnc)
+
+  function CncFilter({ value, onChange, label='CNC 篩選' }){
+    return <div className="cnc-table-filter">
+      <span>{label}</span>
+      <select value={value} onChange={e=>onChange(e.target.value)}>
+        {CNC_OPTIONS.map((cnc,index)=><option key={`table-filter-${label}-${cnc}-${index}`} value={cnc}>{cnc === 'ALL' ? '全部 CNC' : cnc}</option>)}
+      </select>
+    </div>
+  }
+
   async function load(){ setSimMeters((await apiClient.get('/hardware-simulator/cnc/meters')).data||[]);
   setLinks((await apiClient.get('/meter/electric/cnc-links')).data||[]);
   setRawRows((await apiClient.get('/meter/raw/latest')).data||[]);
   setFeatures((await apiClient.get('/meter/features/latest')).data||[]) }
-  async function sendMeter(cnc){ await apiClient.post(`/meter/electric/demo/${cnc}`).catch(showError); await load() }
+  async function sendMeter(cnc){
+    if(cnc === 'ALL') await apiClient.post('/meter/electric/demo-all').catch(showError)
+    else await apiClient.post(`/meter/electric/demo/${cnc}`).catch(showError)
+    await load()
+  }
+  async function seedSelected(){ await sendMeter(simulateCnc) }
   async function seedAll(){ await apiClient.post('/meter/electric/demo-all').catch(showError); await load() }
   useEffect(()=>{load()},[])
   return <div className="page">
   <PageHeader title="CNC 機台 + 智慧電表模擬器" subtitle="智慧電表資料已改為 FFA 電表介面資料格式，並與 CNC、AIPS 特徵工程、DQN State 串聯。">
-  <div className="cnc-button-strip">
-    {Array.from({ length: 14 }, (_, i) => `CNC-${String(i + 1).padStart(2, '0')}`).map((cnc) => (
-      <button className="primary-btn compact-btn" key={cnc} onClick={() => sendMeter(cnc)}>模擬 {cnc}</button>
-    ))}
+  <div className="meter-sim-toolbar">
+    <select value={simulateCnc} className="select-control" onChange={e=>setSimulateCnc(e.target.value)}>
+      {CNC_OPTIONS.map((cnc,index)=><option key={`simulate-meter-${cnc}-${index}`} value={cnc}>{cnc === 'ALL' ? '全部 CNC' : cnc}</option>)}
+    </select>
+    <button className="primary-btn compact-btn" onClick={seedSelected}>模擬</button>
   </div>
   <button onClick={seedAll}>模擬全部 14 台</button>
   <button onClick={load}>重新整理</button>
@@ -80,7 +103,7 @@ export function CncMeterSimulator(){
     'DQN State|與 ERP 製令、WMS 線邊庫一起形成 AI 排程輸入。'].map((s,
     i)=>{const[a,
     b]=s.split('|');
-  return <div className="flow-step" key={a}>
+  return <div className="flow-step" key={`flow-step-${a}-${i}`}>
   <strong>{i+1}. {a}
   </strong>
   <span>{b}
@@ -89,20 +112,20 @@ export function CncMeterSimulator(){
   </div>
   </div>
   <div className="card">
-  <h2>模擬智慧電表</h2>
-  <DataTable columns={simColumns} rows={simMeters}/>
+  <div className="card-title-row"><h2>模擬智慧電表</h2><CncFilter value={simMeterCnc} onChange={setSimMeterCnc}/></div>
+  <DataTable columns={simColumns} rows={byCnc(simMeters, simMeterCnc)}/>
   </div>
   <div className="card">
-  <h2>CNC 與智慧電表連線</h2>
-  <DataTable columns={linkColumns} rows={links}/>
+  <div className="card-title-row"><h2>CNC 與智慧電表連線</h2><CncFilter value={linkCnc} onChange={setLinkCnc}/></div>
+  <DataTable columns={linkColumns} rows={byCnc(links, linkCnc)}/>
   </div>
   <div className="card">
-  <h2>寫入後 CNC 電表資料</h2>
-  <DataTable columns={rawColumns} rows={rawRows}/>
+  <div className="card-title-row"><h2>寫入後 CNC 電表資料</h2><CncFilter value={rawCnc} onChange={setRawCnc}/></div>
+  <DataTable columns={rawColumns} rows={byCnc(rawRows, rawCnc)}/>
   </div>
   <div className="card">
-  <h2>AI 特徵資料</h2>
-  <DataTable columns={featureColumns} rows={features}/>
+  <div className="card-title-row"><h2>AI 特徵資料</h2><CncFilter value={featureCnc} onChange={setFeatureCnc}/></div>
+  <DataTable columns={featureColumns} rows={byCnc(features, featureCnc)}/>
   </div>
   </div>
 }
@@ -194,7 +217,7 @@ export function ErpSimulator(){
     '回傳ERP|處理完成後新增 PROCESSED snapshot 並寫入 OUTBOUND callback。'].map((s,
     i)=>{const[a,
     b]=s.split('|');
-  return <div className="flow-step" key={a}>
+  return <div className="flow-step" key={`erp-flow-step-${a}-${i}`}>
   <strong>{i+1}. {a}
   </strong>
   <span>{b}

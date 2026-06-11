@@ -175,8 +175,8 @@ export default function DataTable({
             {pageRows.length === 0 ? (
               <tr><td colSpan={columns.length + (renderActions ? 1 : 0)}>目前沒有資料</td></tr>
             ) : pageRows.map((row, idx) => (
-              <tr key={row.id || row[columns[0]] || `${idx}-${page}`}>
-                {columns.map(col => <td key={col}>{formatValue(row[col], col, labels[col])}</td>)}
+              <tr key={`dt-row-${row.id || row[columns[0]] || "row"}-${page}-${idx}`}>
+                {columns.map((col, colIndex) => <td key={`dt-cell-${page}-${idx}-${colIndex}-${col}`}>{formatValue(row[col], col, labels[col])}</td>)}
                 {renderActions && <td>{renderActions(row)}</td>}
               </tr>
             ))}

@@ -129,8 +129,8 @@ export default function DqnExplainPanel() {
           實際 DQN 會學 Q Value；此頁用可解釋公式展示「為什麼它會選這個 Action」。
         </p>
         <div className="formula-list">
-          {Object.entries(rewardFormula).map(([key, formula]) => (
-            <div className="formula-item" key={key}>
+          {Object.entries(rewardFormula).map(([key, formula], index) => (
+            <div className="formula-item" key={`state-vector-${key}-${index}`}>
               <strong>{key}</strong>
               <span>{formula}</span>
             </div>
@@ -146,15 +146,15 @@ export default function DqnExplainPanel() {
         </p>
 
         <div className="cnc-grid">
-          {results.map((row) => (
-            <div key={row.cnc_id} className="cnc-card">
+          {results.map((row, index) => (
+            <div key={`cnc-row-${row.cnc_id}-${index}`} className="cnc-card">
               <div className="cnc-title">{row.cnc_id}｜{row.current_step}</div>
               <div className="best-action">{row.best_action_name}</div>
               <div className="state-line">State Vector：{(row.state_vector || []).join(' / ')}</div>
 
               <div className="reward-bars">
-                {Object.entries(row.reward_scores || {}).map(([action, score]) => (
-                  <div className="reward-row" key={action}>
+                {Object.entries(row.reward_scores || {}).map(([action, score], actionIndex) => (
+                  <div className="reward-row" key={`action-${row.cnc_id}-${action}-${actionIndex}`}>
                     <span className="reward-name">{action}</span>
                     <div className="bar">
                       <div className="bar-inner" style={{ width: `${score}%` }} />
