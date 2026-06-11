@@ -147,6 +147,7 @@ export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(!!storedToken)
   const [currentUser, setCurrentUser] = useState(readStoredUser())
   const [tab, setTab] = useState('dashboard')
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [openedGroups, setOpenedGroups] = useState([
     '總覽',
     '系統管理',
@@ -185,8 +186,17 @@ export default function App() {
   }
 
   return (
-    <div className="layout">
+    <div className={`layout ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
       <aside className="sidebar">
+        <button
+          type="button"
+          className="sidebar-collapse-btn"
+          onClick={() => setSidebarCollapsed((value) => !value)}
+          title={sidebarCollapsed ? '展開左側選單' : '縮合左側選單'}
+        >
+          {sidebarCollapsed ? '☰' : '‹'}
+        </button>
+
         <div className="brand">
           <div className="brand-logo-wrap">
             <img
@@ -226,7 +236,8 @@ export default function App() {
             <div key={group.title} className="menu-group">
               <button
                 className="menu-group-title"
-                onClick={() => toggleGroup(group.title)}
+                onClick={() => sidebarCollapsed ? setSidebarCollapsed(false) : toggleGroup(group.title)}
+                title={group.title}
               >
                 <span>{group.icon}</span>
                 <span>{group.title}</span>
@@ -242,6 +253,7 @@ export default function App() {
                       key={item.key}
                       className={tab === item.key ? 'active' : ''}
                       onClick={() => setTab(item.key)}
+                      title={item.label}
                     >
                       <span>{item.icon}</span>
                       <span>{item.label}</span>
@@ -255,6 +267,7 @@ export default function App() {
 
         <div className="sidebar-footer">
           <small>React 5074 + FastAPI 8999 + PostgreSQL</small>
+          <small>SI：國興資訊</small>
         </div>
       </aside>
 
