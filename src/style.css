@@ -4527,3 +4527,47 @@ pre {
     margin-right: 0;
   }
 }
+
+/* FIX105: CNC filters visible per table + prevent CNC text wrapping */
+.cnc-nowrap,
+.select-control.cnc-nowrap,
+.cnc-table-filter select,
+.flow-cnc-filter select {
+  white-space: nowrap;
+  min-width: 150px;
+}
+
+.card-title-row .select-control,
+.flow-cnc-filter .select-control,
+.cnc-table-filter .select-control {
+  flex: 0 0 auto;
+}
+
+.table-wrap th,
+.table-wrap td,
+.data-table th,
+.data-table td,
+table th,
+table td {
+  white-space: nowrap;
+}
+
+.table-wrap,
+.data-table-panel,
+.card:has(table) {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.flow-cnc-filter {
+  justify-content: flex-start;
+  margin: 8px 0 12px;
+}
+
+@media (max-width: 768px) {
+  .card-title-row .select-control,
+  .flow-cnc-filter .select-control,
+  .cnc-table-filter .select-control {
+    width: 100%;
+  }
+}

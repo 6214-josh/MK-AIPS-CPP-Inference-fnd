@@ -47,9 +47,9 @@ export default function DqnExplainPanel() {
     <div className="page">
       <div className="page-header">
         <div>
-          <h1 className="page-title">DQN 決策說明 / Reward 展開</h1>
+          <h1 className="page-title">DQN Reward 說明 / 14 台 CNC + 工序關係</h1>
           <p className="page-subtitle">
-            展示 DQN 接收哪些變數、如何計算 Reward 分數，以及高分 / 低分如何觸發加工、補料、停機、換機台等 Action。
+            展示 14 台 CNC 如何依 ERP 製令、流程卡工序關係、WMS 線邊庫、智慧電表與品質風險計算 Reward / Q Value。
           </p>
         </div>
         <div className="toolbar">
@@ -66,8 +66,8 @@ export default function DqnExplainPanel() {
       <div className="metric-grid">
         <div className="metric-card">
           <div className="metric-label">CNC 數量</div>
-          <div className="metric-value">3</div>
-          <div className="metric-hint">CNC-01 / CNC-02 / CNC-03</div>
+          <div className="metric-value">14</div>
+          <div className="metric-hint">CNC-01 ~ CNC-14</div>
         </div>
         <div className="metric-card">
           <div className="metric-label">State 變數</div>
@@ -139,10 +139,10 @@ export default function DqnExplainPanel() {
       </section>
 
       <section className="card">
-        <h2>三台 CNC + 工序關係範例</h2>
+        <h2>14 台 CNC + 工序關係範例</h2>
         <p className="section-note">
           若流程卡是「步驟1 → 步驟2 → 步驟3」，則後一步必須等前一步完成。
-          若三台 CNC 可平行加工，DQN 會比較每台 CNC 的 Reward，選最高分 Action。
+          14 台 CNC 會依各自工序、OEE、缺料風險、電表風險、品質風險與換線成本計算 Reward，選最高分 Action。
         </p>
 
         <div className="cnc-grid">

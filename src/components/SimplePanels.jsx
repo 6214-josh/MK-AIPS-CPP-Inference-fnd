@@ -2,6 +2,9 @@ import React, { useEffect, useMemo, useState } from 'react'
 import apiClient from '../api/apiClient'
 import DataTable from './DataTable.jsx'
 
+const AIPS_CNC_OPTIONS = ['ALL', ...Array.from({ length: 14 }, (_, i) => `CNC-${String(i + 1).padStart(2, '0')}`)]
+const toPercent3 = (value) => `${(Number(value || 0) * 100).toFixed(3)}%`
+
 export function PageHeader({ title, subtitle, children }) {
   return (
     <div className="page-header">
@@ -25,26 +28,30 @@ export function showError(err) {
 
 export function AipsStatePanel() {
   const [rows, setRows] = useState([])
+  const [selectedCnc, setSelectedCnc] = useState('ALL')
   const columns = ['state_id','state_time','work_order_no','cnc_machine_id','machine_status','shortage_risk_score','delay_risk_score','quality_risk_score','power_risk_score']
-  async function load(){ setRows((await apiClient.get('/aips/states/latest')).data || []) }
+  const displayRows = useMemo(() => selectedCnc === 'ALL' ? rows : rows.filter(row => row.cnc_machine_id === selectedCnc), [rows, selectedCnc])
+  async function load(){ setRows((await apiClient.get('/aips/states/latest?limit=200')).data || []) }
   async function run(){ await apiClient.post('/aips/states/build'); await load() }
   useEffect(()=>{ load() }, [])
   return <div className="page">
-  <PageHeader title="DQN State 狀態特徵">
+  <PageHeader title="DQN State 狀態特徵" subtitle="DQN State 狀態特徵支援 CNC-01 ~ CNC-14 篩選。">
   <button onClick={run}>建立 DQN State</button>
   <button onClick={load}>重新整理</button>
   </PageHeader>
   <div className="card">
-  <DataTable columns={columns} rows={rows}/>
+  <div className="card-title-row"><h2>DQN State 狀態特徵</h2><select value={selectedCnc} className="select-control cnc-nowrap" onChange={e=>setSelectedCnc(e.target.value)}>{AIPS_CNC_OPTIONS.map((cnc,index)=><option key={`state-cnc-${cnc}-${index}`} value={cnc}>{cnc==='ALL'?'全部 CNC':cnc}</option>)}</select></div>
+  <DataTable columns={columns} rows={displayRows}/>
   </div>
   </div>
 }
 
 export function DqnActionPanel() {
   const [rows, setRows] = useState([])
+  const [selectedCnc, setSelectedCnc] = useState('ALL')
   const [gpuHealth, setGpuHealth] = useState(null)
   const columns = ['action_id','action_time','work_order_no','original_cnc_machine_id','suggested_cnc_machine_id','action_type','action_name','action_reason','action_confidence_score','action_status']
-    const labels = { action_id:'編號',
+  const labels = { action_id:'編號',
     action_time:'時間',
     work_order_no:'製令單',
     original_cnc_machine_id:'原機台',
@@ -54,143 +61,132 @@ export function DqnActionPanel() {
     action_reason:'原因',
     action_confidence_score:'信心',
     action_status:'狀態' }
-  async function load(){ setRows((await apiClient.get('/aips/dqn/actions/latest')).data || []) }
+  const filteredRows = useMemo(() => selectedCnc === 'ALL' ? rows : rows.filter(row => row.original_cnc_machine_id === selectedCnc || row.suggested_cnc_machine_id === selectedCnc || row.cnc_machine_id === selectedCnc), [rows, selectedCnc])
+  const displayRows = filteredRows.map(row => ({ ...row, action_confidence_score: toPercent3(row.action_confidence_score) }))
+  async function load(){ setRows((await apiClient.get(`/aips/dqn/actions/latest?limit=200&cnc_machine_id=${selectedCnc}`)).data || []) }
   async function loadGpuHealth(){ setGpuHealth((await apiClient.get('/aips/dqn/gpu-health')).data || null) }
   async function generate(){ await apiClient.post('/aips/dqn/generate-actions'); await load(); await loadGpuHealth() }
-  useEffect(()=>{ load(); loadGpuHealth() }, [])
+  useEffect(()=>{ load(); loadGpuHealth() }, [selectedCnc])
   const gpuStatusText = gpuHealth ? `${gpuHealth.engine || 'CUDA Driver API 推論服務'}：${gpuHealth.status || '-'}${gpuHealth.url ? `｜${gpuHealth.url}` : ''}${gpuHealth.error ? `｜${gpuHealth.error}` : ''}` : '檢查中'
   return <div className="page">
-  <PageHeader title="DQN 排程Action" subtitle="依據 DQN State 產生提高優先權、換機、補料、預防保養等建議。可優先呼叫獨立 C++ CUDA Driver API 推論服務。">
+  <PageHeader title="DQN 排程Action" subtitle="依據 DQN State 產生提高優先權、換機、補料、預防保養等建議。可依 CNC-01 ~ CNC-14 篩選。">
+  <select value={selectedCnc} className="select-control" onChange={e=>setSelectedCnc(e.target.value)}>
+    {AIPS_CNC_OPTIONS.map((cnc,index)=><option key={`dqn-action-cnc-${cnc}-${index}`} value={cnc}>{cnc==='ALL'?'全部 CNC':cnc}</option>)}
+  </select>
   <button className="primary-btn" onClick={generate}>產生 DQN 建議</button>
   <button onClick={load}>重新整理</button>
   <button onClick={loadGpuHealth}>檢查 GPU 推論服務</button>
   </PageHeader>
   <div className="card">
   <strong>GPU 推論服務狀態：</strong>
-  <div>{gpuStatusText}
-  </div>
+  <div>{gpuStatusText}</div>
   </div>
   <div className="card">
-  <DataTable columns={columns} rows={rows} labels={labels}/>
+  <div className="card-title-row"><h2>DQN 排程 Action 明細</h2><select value={selectedCnc} className="select-control cnc-nowrap" onChange={e=>setSelectedCnc(e.target.value)}>{AIPS_CNC_OPTIONS.map((cnc,index)=><option key={`dqn-action-table-cnc-${cnc}-${index}`} value={cnc}>{cnc==='ALL'?'全部 CNC':cnc}</option>)}</select></div>
+  <DataTable columns={columns} rows={displayRows} labels={labels}/>
   </div>
   </div>
 }
 
 export function PredictionPanel() {
   const [rows, setRows] = useState([])
+  const [selectedCnc, setSelectedCnc] = useState('ALL')
   const [message, setMessage] = useState('')
   const columns = [
-    'prediction_id',
-    'prediction_time',
-    'work_order_no',
-    'cnc_machine_id',
-    'prediction_type',
-    'predicted_value',
-    'predicted_good_qty',
-    'predicted_ng_qty',
-    'predicted_yield_rate',
-    'capacity_utilization_rate',
-    'confidence_score',
-    'predicted_finish_time',
-    'predicted_material_shortage_risk',
-    'predicted_energy_consumption_kwh',
-    'model_name'
+    'prediction_id','prediction_time','work_order_no','cnc_machine_id','prediction_type',
+    'predicted_value','predicted_good_qty','predicted_ng_qty',
+    'predicted_yield_rate','capacity_utilization_rate','confidence_score',
+    'predicted_finish_time','predicted_material_shortage_risk','predicted_machine_down_risk',
+    'predicted_quality_risk','predicted_energy_consumption_kwh','model_name'
   ]
   const labels = {
-    prediction_id: '編號',
-    prediction_time: '時間',
-    work_order_no: '製令單',
-    cnc_machine_id: 'CNC',
-    prediction_type: '預測類型',
-    predicted_value: '預測產量',
-    predicted_good_qty: '預測良品量',
-    predicted_ng_qty: '預測不良量',
-    predicted_yield_rate: '預測良率',
-    capacity_utilization_rate: '產能利用率',
-    confidence_score: '信心分數',
-    predicted_finish_time: '預估完成時間',
-    predicted_material_shortage_risk: '缺料風險',
-    predicted_energy_consumption_kwh: '預估耗電kWh',
-    model_name: '模型'
+    prediction_id: '編號', prediction_time: '時間', work_order_no: '製令單', cnc_machine_id: 'CNC',
+    prediction_type: '預測類型', predicted_value: '預測產量', predicted_good_qty: '預測良品量',
+    predicted_ng_qty: '預測不良量', predicted_yield_rate: '預測良率', capacity_utilization_rate: '產能利用率',
+    confidence_score: '信心分數', predicted_finish_time: '預估完成時間',
+    predicted_material_shortage_risk: '缺料風險', predicted_machine_down_risk: '停機風險',
+    predicted_quality_risk: '品質風險', predicted_energy_consumption_kwh: '預估耗電kWh', model_name: '模型'
   }
-  async function load(){ setRows((await apiClient.get('/aips/predictions/latest')).data || []) }
+  const filteredRows = useMemo(() => selectedCnc === 'ALL' ? rows : rows.filter(row => row.cnc_machine_id === selectedCnc), [rows, selectedCnc])
+  const displayRows = filteredRows.map(row => ({
+    ...row,
+    predicted_yield_rate: toPercent3(row.predicted_yield_rate),
+    capacity_utilization_rate: toPercent3(row.capacity_utilization_rate),
+    confidence_score: toPercent3(row.confidence_score),
+    predicted_material_shortage_risk: toPercent3(row.predicted_material_shortage_risk),
+    predicted_machine_down_risk: toPercent3(row.predicted_machine_down_risk),
+    predicted_quality_risk: toPercent3(row.predicted_quality_risk),
+  }))
+  async function load(){ setRows((await apiClient.get(`/aips/predictions/latest?limit=200&cnc_machine_id=${selectedCnc}`)).data || []) }
   async function run(){
     const res = await apiClient.post('/aips/predictions/run').catch(showError)
     setMessage(res?.data?.message || `已新增 ${res?.data?.created_count || 0} 筆 AI 產量預測`)
     await load()
   }
-  useEffect(()=>{ load() }, [])
+  useEffect(()=>{ load() }, [selectedCnc])
   return (
     <div className="page">
-      <PageHeader title="AI 生產預測" subtitle="此頁重點顯示「產量預測」：預測產量、良品量、不良量、良率、產能利用率與信心分數。">
+      <PageHeader title="AI 生產預測" subtitle="此頁重點顯示「產量預測」：可依 CNC-01 ~ CNC-14 篩選，良率 / 風險 / 信心以百分比小數 3 位顯示。">
+        <select value={selectedCnc} className="select-control" onChange={e=>setSelectedCnc(e.target.value)}>
+          {AIPS_CNC_OPTIONS.map((cnc,index)=><option key={`prediction-cnc-${cnc}-${index}`} value={cnc}>{cnc==='ALL'?'全部 CNC':cnc}</option>)}
+        </select>
         <button className="primary-btn" onClick={run}>執行 LSTM / ARIMA 產量預測</button>
         <button onClick={load}>重新整理</button>
       </PageHeader>
       {message && <div className="export-message">{message}</div>}
       <div className="card">
-        <DataTable columns={columns} rows={rows} labels={labels}/>
+        <div className="card-title-row"><h2>AI 生產預測資料</h2><select value={selectedCnc} className="select-control cnc-nowrap" onChange={e=>setSelectedCnc(e.target.value)}>{AIPS_CNC_OPTIONS.map((cnc,index)=><option key={`prediction-table-cnc-${cnc}-${index}`} value={cnc}>{cnc==='ALL'?'全部 CNC':cnc}</option>)}</select></div>
+        <DataTable columns={columns} rows={displayRows} labels={labels}/>
       </div>
     </div>
   )
 }
 
-
 export function RewardPanel() {
   const [rows, setRows] = useState([])
+  const [selectedCnc, setSelectedCnc] = useState('ALL')
   const [message, setMessage] = useState('')
   const columns = [
-    'reward_id',
-    'reward_time',
-    'action_id',
-    'work_order_no',
-    'cnc_machine_id',
-    'reward_score',
-    'oee_improvement_rate',
-    'delay_minutes_saved',
-    'energy_saving_rate',
-    'actual_oee',
-    'actual_yield_rate'
+    'reward_id','reward_time','action_id','work_order_no','cnc_machine_id','reward_score',
+    'oee_improvement_rate','delay_minutes_saved','energy_saving_rate','actual_oee','actual_yield_rate'
   ]
   const labels = {
-    reward_id: '編號',
-    reward_time: '時間',
-    action_id: 'Action',
-    work_order_no: '製令單',
-    cnc_machine_id: 'CNC',
-    reward_score: 'Reward總分',
-    oee_improvement_rate: 'OEE改善率',
-    delay_minutes_saved: '節省延遲分鐘',
-    energy_saving_rate: '節能率',
-    actual_oee: '實際OEE',
-    actual_yield_rate: '良率'
+    reward_id: '編號', reward_time: '時間', action_id: 'Action', work_order_no: '製令單',
+    cnc_machine_id: 'CNC', reward_score: 'Reward總分', oee_improvement_rate: 'OEE改善率',
+    delay_minutes_saved: '節省延遲分鐘', energy_saving_rate: '節能率', actual_oee: '實際OEE', actual_yield_rate: '良率'
   }
-
-  async function load(){
-    setRows((await apiClient.get('/aips/rewards/latest')).data || [])
-  }
-
+  const filteredRows = useMemo(() => selectedCnc === 'ALL' ? rows : rows.filter(row => row.cnc_machine_id === selectedCnc), [rows, selectedCnc])
+  const displayRows = filteredRows.map(row => ({
+    ...row,
+    oee_improvement_rate: toPercent3(row.oee_improvement_rate),
+    energy_saving_rate: toPercent3(row.energy_saving_rate),
+    actual_oee: toPercent3(row.actual_oee),
+    actual_yield_rate: toPercent3(row.actual_yield_rate),
+  }))
+  async function load(){ setRows((await apiClient.get(`/aips/rewards/latest?limit=200&cnc_machine_id=${selectedCnc}`)).data || []) }
   async function run(){
     const res = await apiClient.post('/aips/rewards/calculate?limit=20').catch(showError)
     setMessage(res?.data?.message || `已新增 ${res?.data?.created_count || 0} 筆 Reward`)
     await load()
   }
-
-  useEffect(()=>{ load() }, [])
-
+  useEffect(()=>{ load() }, [selectedCnc])
   return (
     <div className="page">
-      <PageHeader title="DQN Reward 回饋" subtitle="Reward 由 OEE、交期、缺料、品質、能源組成，用來回饋 DQN Action 是否真的改善排程。">
+      <PageHeader title="DQN Reward 回饋" subtitle="Reward 由 OEE、交期、缺料、品質、能源組成；可依 CNC-01 ~ CNC-14 篩選。">
+        <select value={selectedCnc} className="select-control" onChange={e=>setSelectedCnc(e.target.value)}>
+          {AIPS_CNC_OPTIONS.map((cnc,index)=><option key={`reward-cnc-${cnc}-${index}`} value={cnc}>{cnc==='ALL'?'全部 CNC':cnc}</option>)}
+        </select>
         <button className="primary-btn" onClick={run}>計算 Reward</button>
         <button onClick={load}>重新整理</button>
       </PageHeader>
       {message && <div className="export-message">{message}</div>}
       <div className="card">
-        <DataTable columns={columns} rows={rows} labels={labels}/>
+        <div className="card-title-row"><h2>Reward 回饋明細</h2><select value={selectedCnc} className="select-control cnc-nowrap" onChange={e=>setSelectedCnc(e.target.value)}>{AIPS_CNC_OPTIONS.map((cnc,index)=><option key={`reward-table-cnc-${cnc}-${index}`} value={cnc}>{cnc==='ALL'?'全部 CNC':cnc}</option>)}</select></div>
+        <DataTable columns={columns} rows={displayRows} labels={labels}/>
       </div>
     </div>
   )
 }
-
 
 export function LoginAuthPanel() {
   const emptyForm = {

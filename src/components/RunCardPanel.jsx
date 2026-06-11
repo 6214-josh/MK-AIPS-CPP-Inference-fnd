@@ -3,10 +3,16 @@ import apiClient from '../api/apiClient'
 import DataTable from './DataTable.jsx'
 import { PageHeader, showError } from './SimplePanels.jsx'
 
+const RUNCARD_CNC_OPTIONS = ['ALL', ...Array.from({ length: 14 }, (_, i) => `CNC-${String(i + 1).padStart(2, '0')}`)]
+
 export default function RunCardPanel(){
   const [headers,setHeaders]=useState([]),[details,setDetails]=useState([]),[features,setFeatures]=useState([]),[suggestions,setSuggestions]=useState([])
   const [dqnActionTotal,setDqnActionTotal]=useState(0)
   const [selectedRunCardId,setSelectedRunCardId]=useState('')
+  const [selectedCnc,setSelectedCnc]=useState('ALL')
+  const [featureCnc,setFeatureCnc]=useState('ALL')
+  const [suggestionCnc,setSuggestionCnc]=useState('ALL')
+  const [detailCnc,setDetailCnc]=useState('ALL')
   const [result,setResult]=useState('')
   const [aiStatus,setAiStatus]=useState({})
     const [form,
@@ -69,6 +75,9 @@ export default function RunCardPanel(){
   }
   useEffect(()=>{load()},[])
   useEffect(()=>{ if(selectedRunCardId) loadDetail(selectedRunCardId) },[selectedRunCardId])
+  const filteredDetails = detailCnc === 'ALL' ? details : details.filter(row => row.cnc_machine_id === detailCnc)
+  const filteredFeatures = featureCnc === 'ALL' ? features : features.filter(row => row.cnc_machine_id === featureCnc)
+  const filteredSuggestions = suggestionCnc === 'ALL' ? suggestions : suggestions.filter(row => row.cnc_machine_id === suggestionCnc || row.original_cnc_machine_id === suggestionCnc || row.suggested_cnc_machine_id === suggestionCnc)
   const statusText = `PyTorch=${aiStatus.pytorch ? '已啟用' : '未啟用'}${
     aiStatus.torch_version ? ` (${aiStatus.torch_version})` : ''
   }，statsmodels ARIMA=${aiStatus.statsmodels ? '已啟用' : '未啟用'}${
@@ -76,7 +85,10 @@ export default function RunCardPanel(){
   }`
   const fields=[['run_card_no','流程卡號'],['production_batch_no','生產批號'],['work_order_no','製令單號'],['customer_name','客戶名稱'],['product_no','產品料號'],['material_no','物料編號'],['piece_id','Piece ID'],['serial_no','S/N']]
   return <div className="page">
-  <PageHeader title="製令流程卡 / AI 排程資料" subtitle="依「生產流程卡」格式建立單頭、單身，並產生 LSTM / ARIMA 特徵與 DQN 排程Action。">
+  <PageHeader title="製令流程卡 / AI 排程資料" subtitle="依「生產流程卡」格式建立單頭、單身，並產生 LSTM / ARIMA 特徵與 DQN 排程Action。可依 CNC-01 ~ CNC-14 篩選。">
+  <select value={selectedCnc} className="select-control" onChange={e=>{setSelectedCnc(e.target.value); setDetailCnc(e.target.value); setFeatureCnc(e.target.value); setSuggestionCnc(e.target.value)}}>
+    {RUNCARD_CNC_OPTIONS.map((cnc,index)=><option key={`runcard-cnc-${cnc}-${index}`} value={cnc}>{cnc==='ALL'?'全部 CNC':cnc}</option>)}
+  </select>
   <button className="primary-btn" onClick={createDemo}>新增流程卡 Demo</button>
   <button onClick={autoCreateDetails}>補齊單身</button>
   <button onClick={generateFeatures}>產生 LSTM / ARIMA 特徵</button>
@@ -121,20 +133,20 @@ export default function RunCardPanel(){
   <DataTable columns={headerColumns} rows={headers}/>
   </div>
   <div className="card">
-  <h2>目前選取流程卡單身</h2>
+  <div className="card-title-row"><h2>目前選取流程卡單身</h2><select value={detailCnc} className="select-control cnc-nowrap" onChange={e=>setDetailCnc(e.target.value)}>{RUNCARD_CNC_OPTIONS.map((cnc,index)=><option key={`runcard-detail-cnc-${cnc}-${index}`} value={cnc}>{cnc==='ALL'?'全部 CNC':cnc}</option>)}</select></div>
   <select value={selectedRunCardId} onChange={e=>setSelectedRunCardId(e.target.value)}>{headers.map(h=>
   <option key={h.run_card_id} value={h.run_card_id}>{h.run_card_no} / {h.work_order_no}
   </option>)}
   </select>
-  <DataTable columns={detailColumns} rows={details}/>
+  <DataTable columns={detailColumns} rows={filteredDetails}/>
   </div>
   <div className="card">
-  <h2>LSTM / ARIMA 特徵</h2>
-  <DataTable columns={featureColumns} rows={features}/>
+  <div className="card-title-row"><h2>LSTM / ARIMA 特徵</h2><select value={featureCnc} className="select-control cnc-nowrap" onChange={e=>setFeatureCnc(e.target.value)}>{RUNCARD_CNC_OPTIONS.map((cnc,index)=><option key={`runcard-feature-cnc-${cnc}-${index}`} value={cnc}>{cnc==='ALL'?'全部 CNC':cnc}</option>)}</select></div>
+  <DataTable columns={featureColumns} rows={filteredFeatures}/>
   </div>
   <div className="card">
-  <h2>DQN 排程建議</h2>
-  <DataTable columns={suggestionColumns} rows={suggestions}/>
+  <div className="card-title-row"><h2>DQN 排程建議</h2><select value={suggestionCnc} className="select-control cnc-nowrap" onChange={e=>setSuggestionCnc(e.target.value)}>{RUNCARD_CNC_OPTIONS.map((cnc,index)=><option key={`runcard-suggestion-cnc-${cnc}-${index}`} value={cnc}>{cnc==='ALL'?'全部 CNC':cnc}</option>)}</select></div>
+  <DataTable columns={suggestionColumns} rows={filteredSuggestions}/>
   </div>
   </div>
 }

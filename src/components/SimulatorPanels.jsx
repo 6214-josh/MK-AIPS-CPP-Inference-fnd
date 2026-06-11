@@ -3,15 +3,26 @@ import apiClient from '../api/apiClient'
 import DataTable from './DataTable.jsx'
 import { PageHeader, showError } from './SimplePanels.jsx'
 
+const SIM_CNC_OPTIONS = ['ALL', ...Array.from({ length: 14 }, (_, i) => `CNC-${String(i + 1).padStart(2, '0')}`)]
+const byCncValue = (rows, cnc, key = 'cnc_machine_id') => cnc === 'ALL' ? rows : (rows || []).filter(row => row[key] === cnc || row.assigned_cnc_machine_id === cnc || row.cnc_machine_id === cnc || row.original_cnc_machine_id === cnc || row.suggested_cnc_machine_id === cnc || String(row.to_location || '').includes(cnc) || String(row.from_location || '').includes(cnc) || String(row.cart_code || '').includes(cnc) || String(row.work_order_no || '').includes(cnc))
+
+function CncDropdown({ value, onChange, allLabel = '全部 CNC' }) {
+  return <select value={value} className="select-control" onChange={e=>onChange(e.target.value)}>
+    {SIM_CNC_OPTIONS.map((cnc,index)=><option key={`sim-global-cnc-${cnc}-${index}`} value={cnc}>{cnc === 'ALL' ? allLabel : cnc}</option>)}
+  </select>
+}
+
 export function PdaAndroidSimulator(){
   const [devices,setDevices]=useState([]), [scans,setScans]=useState([])
+  const [selectedCnc,setSelectedCnc]=useState('ALL')
   const deviceColumns=['pda_id','device_code','device_name','device_type','wifi_ssid','ip_address','operator_id','online_flag','last_scan_time']
   const scanColumns=['scan_event_id','scan_time','scan_type','scan_code','operator_id','work_order_no','material_no','cnc_machine_id','event_status','event_message']
   async function load(){ setDevices((await apiClient.get('/hardware-simulator/pda/devices')).data||[]); setScans((await apiClient.get('/architecture/scan/events')).data||[]) }
-  async function scanDemo(){ await apiClient.post('/hardware-simulator/pda/scan-demo').catch(showError); await load() }
+  async function scanDemo(){ await apiClient.post(`/hardware-simulator/pda/scan-demo?cnc_machine_id=${selectedCnc}`).catch(showError); await load() }
   useEffect(()=>{load()},[])
   return <div className="page">
-  <PageHeader title="WiFi PDA / Android 手持端模擬器" subtitle="模擬掃描員工、工單、物料與 CNC QR Code。">
+  <PageHeader title="WiFi PDA / Android 手持端模擬器" subtitle="模擬掃描員工、工單、物料與 CNC QR Code，支援 CNC-01 ~ CNC-14。">
+  <CncDropdown value={selectedCnc} onChange={setSelectedCnc}/>
   <button className="primary-btn" onClick={scanDemo}>模擬 PDA 掃描</button>
   <button onClick={load}>重新整理</button>
   </PageHeader>
@@ -20,21 +31,23 @@ export function PdaAndroidSimulator(){
   <DataTable columns={deviceColumns} rows={devices}/>
   </div>
   <div className="card">
-  <h2>掃描事件</h2>
-  <DataTable columns={scanColumns} rows={scans}/>
+  <div className="card-title-row"><h2>掃描事件</h2><CncDropdown value={selectedCnc} onChange={setSelectedCnc}/></div>
+  <DataTable columns={scanColumns} rows={byCncValue(scans, selectedCnc)}/>
   </div>
   </div>
 }
 
 export function NfcQrTagSimulator(){
   const [tags,setTags]=useState([]), [scans,setScans]=useState([])
+  const [selectedCnc,setSelectedCnc]=useState('ALL')
   const tagColumns=['tag_id','tag_code','tag_type','bind_target_type','bind_target_code','bind_target_name','enabled_flag','last_scan_time']
   const scanColumns=['scan_event_id','scan_time','scan_type','scan_code','operator_id','work_order_no','material_no','cnc_machine_id','event_status','event_message']
   async function load(){ setTags((await apiClient.get('/hardware-simulator/tags')).data||[]); setScans((await apiClient.get('/architecture/scan/events')).data||[]) }
-  async function scanDemo(){ await apiClient.post('/hardware-simulator/tags/scan-demo').catch(showError); await load() }
+  async function scanDemo(){ await apiClient.post(`/hardware-simulator/tags/scan-demo?cnc_machine_id=${selectedCnc}`).catch(showError); await load() }
   useEffect(()=>{load()},[])
   return <div className="page">
-  <PageHeader title="NFC 卡 / QR Code 標籤模擬器" subtitle="綁定員工、料件、工單、CNC 等現場標籤。">
+  <PageHeader title="NFC 卡 / QR Code 標籤模擬器" subtitle="綁定員工、料件、工單、CNC 等現場標籤，支援 CNC-01 ~ CNC-14。">
+  <CncDropdown value={selectedCnc} onChange={setSelectedCnc}/>
   <button className="primary-btn" onClick={scanDemo}>模擬 NFC / QR 掃描</button>
   <button onClick={load}>重新整理</button>
   </PageHeader>
@@ -43,8 +56,8 @@ export function NfcQrTagSimulator(){
   <DataTable columns={tagColumns} rows={tags}/>
   </div>
   <div className="card">
-  <h2>掃描事件</h2>
-  <DataTable columns={scanColumns} rows={scans}/>
+  <div className="card-title-row"><h2>掃描事件</h2><CncDropdown value={selectedCnc} onChange={setSelectedCnc}/></div>
+  <DataTable columns={scanColumns} rows={byCncValue(scans, selectedCnc)}/>
   </div>
   </div>
 }
@@ -132,42 +145,49 @@ export function CncMeterSimulator(){
 
 export function LineSideLogisticsSimulator(){
   const [rows,setRows]=useState([]),[inv,setInv]=useState([])
+  const [selectedCnc,setSelectedCnc]=useState('ALL')
+  const [logisticsCnc,setLogisticsCnc]=useState('ALL')
+  const [inventoryCnc,setInventoryCnc]=useState('ALL')
   const columns=['logistics_id','event_time','cart_code','operator_id','work_order_no','material_no','from_location','to_location','logistics_action','qty','event_status']
   const invColumns=['snapshot_id','snapshot_time','cnc_machine_id','material_no','current_qty','available_qty','shortage_flag','shortage_qty','replenishment_required_flag']
-  async function load(){ setRows((await apiClient.get('/hardware-simulator/logistics')).data||[]); setInv((await apiClient.get('/inventory/snapshots/latest')).data||[]) }
-  async function demo(){ await apiClient.post('/hardware-simulator/logistics/cart-demo').catch(showError); await load() }
+  async function load(){ setRows((await apiClient.get('/hardware-simulator/logistics')).data||[]); setInv((await apiClient.get('/inventory/snapshots/latest?limit=200')).data||[]) }
+  async function demo(){ await apiClient.post(`/hardware-simulator/logistics/cart-demo?cnc_machine_id=${selectedCnc}`).catch(showError); await load() }
+  async function demoAll(){ await apiClient.post('/hardware-simulator/logistics/cart-demo?cnc_machine_id=ALL').catch(showError); await load() }
   useEffect(()=>{load()},[])
   return <div className="page">
-  <PageHeader title="線邊庫 / 人工物流模擬器" subtitle="模擬人工推車補料、領料、退料，並回寫 WMS 線邊庫庫存。">
-  <button className="primary-btn" onClick={demo}>模擬補料事件</button>
+  <PageHeader title="線邊庫 / 人工物流模擬器" subtitle="模擬人工推車補料、領料、退料，並回寫 WMS 線邊庫庫存；支援 CNC-01 ~ CNC-14。">
+  <CncDropdown value={selectedCnc} onChange={setSelectedCnc}/>
+  <button className="primary-btn" onClick={demo}>模擬選取 CNC</button>
+  <button onClick={demoAll}>模擬全部 14 台</button>
   <button onClick={load}>重新整理</button>
   </PageHeader>
   <div className="card">
-  <h2>人工物流事件</h2>
-  <DataTable columns={columns} rows={rows}/>
+  <div className="card-title-row"><h2>人工物流事件</h2><CncDropdown value={logisticsCnc} onChange={setLogisticsCnc}/></div>
+  <DataTable columns={columns} rows={byCncValue(rows, logisticsCnc)}/>
   </div>
   <div className="card">
-  <h2>線邊庫庫存快照</h2>
-  <DataTable columns={invColumns} rows={inv}/>
+  <div className="card-title-row"><h2>線邊庫庫存快照</h2><CncDropdown value={inventoryCnc} onChange={setInventoryCnc}/></div>
+  <DataTable columns={invColumns} rows={byCncValue(inv, inventoryCnc)}/>
   </div>
   </div>
 }
-
 
 export function ErpSimulator(){
   const [summary,setSummary]=useState({})
   const [orders,setOrders]=useState([])
   const [callbacks,setCallbacks]=useState([])
   const [message,setMessage]=useState('')
+  const [selectedCnc,setSelectedCnc]=useState('ALL')
   const orderColumns=['snapshot_id','snapshot_time','work_order_no','sales_order_no','product_no','planned_qty','completed_qty','remaining_qty','current_process_status','priority_level','assigned_cnc_machine_id']
   const callbackColumns=['integration_id','integration_time','direction','api_name','status','message']
+  const filteredOrders = byCncValue(orders, selectedCnc, 'assigned_cnc_machine_id')
   async function load(){
     setSummary((await apiClient.get('/erp-simulator/summary')).data||{})
-    setOrders((await apiClient.get('/erp-simulator/orders/latest')).data||[])
+    setOrders((await apiClient.get(`/erp-simulator/orders/latest?limit=200&cnc_machine_id=${selectedCnc}`)).data||[])
     setCallbacks((await apiClient.get('/erp-simulator/callbacks/latest')).data||[])
   }
   async function receiveDemo(){
-    const res=await apiClient.post('/erp-simulator/receive-demo').catch(showError)
+    const res=await apiClient.post(`/erp-simulator/receive-demo?cnc_machine_id=${selectedCnc}`).catch(showError)
     if(res?.data) setMessage(res.data.message || 'ERP 新製令已接收')
     await load()
   }
@@ -181,57 +201,30 @@ export function ErpSimulator(){
     if(res?.data) setMessage(res.data.message || '已執行 AIPS 1-10 全流程並回傳 ERP')
     await load()
   }
-  useEffect(()=>{load()},[])
+  useEffect(()=>{load()},[selectedCnc])
   return <div className="page">
-  <PageHeader title="ERP 模擬器" subtitle="模擬 ERP 送入製令資料，AIPS 處理完成後再回傳 ERP 模擬器。">
+  <PageHeader title="ERP 模擬器" subtitle="模擬 ERP 送入製令資料，AIPS 處理完成後再回傳 ERP 模擬器；支援 CNC-01 ~ CNC-14。">
+  <CncDropdown value={selectedCnc} onChange={setSelectedCnc}/>
   <button className="primary-btn" onClick={receiveDemo}>接收 ERP 新製令</button>
   <button onClick={processPending}>處理完成並回傳 ERP</button>
   <button onClick={runFullFlow}>跑 AIPS 1-10 + ERP 回傳</button>
   <button onClick={load}>重新整理</button>
-  </PageHeader>{message&&<div className="export-message">操作結果：{message}
-  </div>}<div className="metric-grid">
-  <div className="metric-card">
-  <div className="metric-label">ERP 總製令</div>
-  <div className="metric-value">{summary.total_count||0}
-  </div>
-  <div className="metric-hint">ERP 模擬器目前最新製令數</div>
-  </div>
-  <div className="metric-card">
-  <div className="metric-label">ERP 已處理</div>
-  <div className="metric-value">{summary.processed_count||0}
-  </div>
-  <div className="metric-hint">AIPS 已回傳 ERP 的製令</div>
-  </div>
-  <div className="metric-card">
-  <div className="metric-label">ERP 未處理</div>
-  <div className="metric-value">{summary.unprocessed_count||0}
-  </div>
-  <div className="metric-hint">已接收但尚未處理完成</div>
-  </div>
+  </PageHeader>{message&&<div className="export-message">操作結果：{message}</div>}
+  <div className="metric-grid">
+  <div className="metric-card"><div className="metric-label">ERP 總製令</div><div className="metric-value">{summary.total_count||0}</div><div className="metric-hint">ERP 模擬器目前最新製令數</div></div>
+  <div className="metric-card"><div className="metric-label">ERP 已處理</div><div className="metric-value">{summary.processed_count||0}</div><div className="metric-hint">AIPS 已回傳 ERP 的製令</div></div>
+  <div className="metric-card"><div className="metric-label">ERP 未處理</div><div className="metric-value">{summary.unprocessed_count||0}</div><div className="metric-hint">已接收但尚未處理完成</div></div>
   </div>
   <div className="card">
   <h2>ERP 模擬流程</h2>
     <div className="flow-grid">{['ERP送入製令|寫入 work_order_progress_snapshot，狀態 RECEIVED。',
     'AIPS資料工程|Step1 接收 ERP，Step2 建立 ERP 特徵。',
     'DQN排程|ERP 製令進入 State / Action / Reward。',
-    '回傳ERP|處理完成後新增 PROCESSED snapshot 並寫入 OUTBOUND callback。'].map((s,
-    i)=>{const[a,
-    b]=s.split('|');
-  return <div className="flow-step" key={`erp-flow-step-${a}-${i}`}>
-  <strong>{i+1}. {a}
-  </strong>
-  <span>{b}
-  </span>
-  </div>})}
+    '回傳ERP|處理完成後新增 PROCESSED snapshot 並寫入 OUTBOUND callback。'].map((s,i)=>{const[a,b]=s.split('|'); return <div className="flow-step" key={`erp-flow-step-${a}-${i}`}><strong>{i+1}. {a}</strong><span>{b}</span></div>})}
   </div>
   </div>
-  <div className="card">
-  <h2>ERP 製令資料</h2>
-  <DataTable columns={orderColumns} rows={orders}/>
-  </div>
-  <div className="card">
-  <h2>AIPS 回傳 ERP 紀錄</h2>
-  <DataTable columns={callbackColumns} rows={callbacks}/>
-  </div>
+  <div className="card"><h2>ERP 製令資料</h2><DataTable columns={orderColumns} rows={filteredOrders}/></div>
+  <div className="card"><h2>AIPS 回傳 ERP 紀錄</h2><DataTable columns={callbackColumns} rows={callbacks}/></div>
   </div>
 }
+

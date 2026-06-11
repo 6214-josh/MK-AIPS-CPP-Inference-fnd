@@ -9,6 +9,7 @@ const DASHBOARD_SUGGESTION_PAGE_SIZE = 5
 export function Dashboard() {
   const [summary, setSummary] = useState({})
   const [selectedSuggestionCnc, setSelectedSuggestionCnc] = useState('ALL')
+  const [selectedTechTableCnc, setSelectedTechTableCnc] = useState('ALL')
   const [suggestionPage, setSuggestionPage] = useState(1)
   const latestActions = summary.latest_actions || []
   const filteredLatestActions = selectedSuggestionCnc === 'ALL'
@@ -17,6 +18,13 @@ export function Dashboard() {
         item.original_cnc_machine_id === selectedSuggestionCnc
         || item.suggested_cnc_machine_id === selectedSuggestionCnc
         || item.cnc_machine_id === selectedSuggestionCnc
+      ))
+  const filteredTechTableActions = selectedTechTableCnc === 'ALL'
+    ? latestActions
+    : latestActions.filter((item) => (
+        item.original_cnc_machine_id === selectedTechTableCnc
+        || item.suggested_cnc_machine_id === selectedTechTableCnc
+        || item.cnc_machine_id === selectedTechTableCnc
       ))
   const suggestionTotalPages = Math.max(1, Math.ceil(filteredLatestActions.length / DASHBOARD_SUGGESTION_PAGE_SIZE))
   const safeSuggestionPage = Math.min(suggestionPage, suggestionTotalPages)
@@ -122,16 +130,25 @@ export function Dashboard() {
   </div>}
   </div>
   <div className="card">
-  <h2>技術資料表</h2>
-  <DataTable columns={actionColumns} rows={filteredLatestActions} labels={actionLabels}/>
+  <div className="card-title-row">
+    <h2>技術資料表</h2>
+    <div className="latest-action-filter">
+      <span>依 CNC 篩選</span>
+      <select value={selectedTechTableCnc} onChange={e=>setSelectedTechTableCnc(e.target.value)}>
+        {DASHBOARD_CNC_OPTIONS.map((cnc, index) => <option key={`dashboard-tech-cnc-${cnc}-${index}`} value={cnc}>{cnc === 'ALL' ? '全選 / 全部 CNC' : cnc}</option>)}
+      </select>
+    </div>
+  </div>
+  <DataTable columns={actionColumns} rows={filteredTechTableActions} labels={actionLabels}/>
   </div>
   </div>
 }
 
 export function WorkOrderPanel() {
   const [rows,setRows]=useState([])
-    const [form,
-    setForm]=useState({work_order_no:'WO-202606-001',
+  const [selectedCnc,setSelectedCnc]=useState('ALL')
+  const [form,setForm]=useState({
+    work_order_no:'WO-202606-001',
     product_no:'P-AXLE-001',
     product_name:'軸心零件',
     process_code:'CNC-MILLING',
@@ -144,164 +161,94 @@ export function WorkOrderPanel() {
     assigned_cnc_machine_id:'CNC-01',
     estimated_remaining_hours:8,
     due_date_text:'2026-06-03 18:00:00',
-    current_process_status:'PROCESSING'})
-    const columns=['snapshot_id',
-    'snapshot_time',
-    'work_order_no',
-    'product_no',
-    'product_name',
-    'process_code',
-    'planned_qty',
-    'completed_qty',
-    'remaining_qty',
-    'due_date',
-    'priority_level',
-    'assigned_cnc_machine_id',
-    'delay_risk_flag']
-    const labels={snapshot_id:'編號',
-    snapshot_time:'時間',
-    work_order_no:'製令單',
-    product_no:'產品',
-    product_name:'品名',
-    process_code:'工序',
-    planned_qty:'計畫量',
-    completed_qty:'完成量',
-    remaining_qty:'剩餘',
-    due_date:'交期',
-    priority_level:'優先',
-    assigned_cnc_machine_id:'CNC',
-    delay_risk_flag:'延遲風險'}
+    current_process_status:'PROCESSING'
+  })
+  const columns=['snapshot_id','snapshot_time','work_order_no','product_no','product_name','process_code','planned_qty','completed_qty','remaining_qty','due_date','priority_level','assigned_cnc_machine_id','delay_risk_flag']
+  const labels={snapshot_id:'編號', snapshot_time:'時間', work_order_no:'製令單', product_no:'產品', product_name:'品名', process_code:'工序', planned_qty:'計畫量', completed_qty:'完成量', remaining_qty:'剩餘', due_date:'交期', priority_level:'優先', assigned_cnc_machine_id:'CNC', delay_risk_flag:'延遲風險'}
+  const filteredRows = selectedCnc === 'ALL' ? rows : rows.filter(row => row.assigned_cnc_machine_id === selectedCnc)
   function update(k,v){ setForm(p=>({...p,[k]:v})) }
   function toIsoDate(text){ const d=new Date(String(text).replace(' ','T')); return isNaN(d.getTime())?null:d.toISOString() }
-  async function create(){ const payload={...form,due_date:toIsoDate(form.due_date_text)};
-  delete payload.due_date_text;
-  await apiClient.post('/work-orders/snapshots', payload);
-  await load() }
+  async function create(){ const payload={...form,due_date:toIsoDate(form.due_date_text)}; delete payload.due_date_text; await apiClient.post('/work-orders/snapshots', payload); await load() }
   async function load(){ setRows((await apiClient.get('/work-orders/snapshots/latest')).data||[]) }
   useEffect(()=>{load()},[])
-    const fields=[['work_order_no',
-    '製令單號'],
-    ['product_no',
-    '產品料號'],
-    ['product_name',
-    '產品名稱'],
-    ['process_code',
-    '工序'],
-    ['planned_qty',
-    '計畫數量',
-    'number'],
-    ['completed_qty',
-    '完成數量',
-    'number'],
-    ['good_qty',
-    '良品',
-    'number'],
-    ['ng_qty',
-    '不良',
-    'number'],
-    ['remaining_qty',
-    '剩餘數量',
-    'number'],
-    ['priority_level',
-    '優先權',
-    'number'],
-    ['assigned_cnc_machine_id',
-    '指派 CNC'],
-    ['estimated_remaining_hours',
-    '預估剩餘小時',
-    'number'],
-    ['due_date_text',
-    '交期'],
-    ['current_process_status',
-    '狀態']]
+  const fields=[['work_order_no','製令單號'],['product_no','產品料號'],['product_name','產品名稱'],['process_code','工序'],['planned_qty','計畫數量','number'],['completed_qty','完成數量','number'],['good_qty','良品','number'],['ng_qty','不良','number'],['remaining_qty','剩餘數量','number'],['priority_level','優先權','number'],['assigned_cnc_machine_id','指派 CNC','cnc'],['estimated_remaining_hours','預估剩餘小時','number'],['due_date_text','交期'],['current_process_status','狀態']]
   return <div className="page">
-  <PageHeader title="ERP 製令單">
+  <PageHeader title="ERP 製令單" subtitle="ERP 製令單新增與查詢支援 CNC-01 ~ CNC-14 下拉選單。">
+  <select value={selectedCnc} className="select-control" onChange={e=>setSelectedCnc(e.target.value)}>
+    {DASHBOARD_CNC_OPTIONS.map((cnc,index)=><option key={`workorder-cnc-${cnc}-${index}`} value={cnc}>{cnc==='ALL'?'全部 CNC':cnc}</option>)}
+  </select>
   <button className="primary-btn" onClick={create}>新增製令單</button>
   <button onClick={load}>重新整理</button>
   </PageHeader>
   <div className="card">
   <h2>新增製令單資料</h2>
   <div className="form-grid">{fields.map(([k,label,type])=>
-  <label key={k}>{label}<input value={form[k]} type={type||'text'} onChange={e=>update(k,type==='number'?Number(e.target.value):e.target.value)} />
+  <label key={k}>{label}
+    {type==='cnc'
+      ? <select value={form[k]} onChange={e=>update(k,e.target.value)}>{DASHBOARD_CNC_OPTIONS.filter(c=>c!=='ALL').map((cnc,index)=><option key={`wo-form-${cnc}-${index}`} value={cnc}>{cnc}</option>)}</select>
+      : <input value={form[k]} type={type||'text'} onChange={e=>update(k,type==='number'?Number(e.target.value):e.target.value)} />}
   </label>)}
   </div>
   </div>
   <div className="card">
   <h2>製令單清單</h2>
-  <DataTable columns={columns} rows={rows} labels={labels}/>
+  <DataTable columns={columns} rows={filteredRows} labels={labels}/>
   </div>
   </div>
 }
 
 export function InventoryPanel() {
   const [rows,setRows]=useState([])
+  const [selectedCnc,setSelectedCnc]=useState('ALL')
   const [form,setForm]=useState({cnc_machine_id:'CNC-01',line_side_location_id:'LS-CNC-01',material_no:'MAT-AL-6061',material_name:'鋁棒 6061',lot_no:'LOT-A1',current_qty:80,reserved_qty:10,safety_stock_qty:20})
-    const columns=['snapshot_id',
-    'snapshot_time',
-    'cnc_machine_id',
-    'line_side_location_id',
-    'material_no',
-    'material_name',
-    'lot_no',
-    'current_qty',
-    'reserved_qty',
-    'available_qty',
-    'safety_stock_qty',
-    'shortage_flag',
-    'shortage_qty',
-    'replenishment_required_flag']
-    const labels={snapshot_id:'編號',
-    snapshot_time:'時間',
-    cnc_machine_id:'CNC',
-    line_side_location_id:'線邊庫',
-    material_no:'物料',
-    material_name:'名稱',
-    lot_no:'批號',
-    current_qty:'現有',
-    reserved_qty:'保留',
-    available_qty:'可用',
-    safety_stock_qty:'安全庫存',
-    shortage_flag:'缺料',
-    shortage_qty:'缺料量',
-    replenishment_required_flag:'需補料'}
-  function update(k,v){ setForm(p=>({...p,[k]:v})) }
+  const columns=['snapshot_id','snapshot_time','cnc_machine_id','line_side_location_id','material_no','material_name','lot_no','current_qty','reserved_qty','available_qty','safety_stock_qty','shortage_flag','shortage_qty','replenishment_required_flag']
+  const labels={snapshot_id:'編號', snapshot_time:'時間', cnc_machine_id:'CNC', line_side_location_id:'線邊庫', material_no:'物料', material_name:'名稱', lot_no:'批號', current_qty:'現有', reserved_qty:'保留', available_qty:'可用', safety_stock_qty:'安全庫存', shortage_flag:'缺料', shortage_qty:'缺料量', replenishment_required_flag:'需補料'}
+  const filteredRows = selectedCnc === 'ALL' ? rows : rows.filter(row => row.cnc_machine_id === selectedCnc)
+  function update(k,v){ setForm(p=>({...p,[k]:v, ...(k==='cnc_machine_id'?{line_side_location_id:`LS-${v}`}:{})})) }
   async function create(){ await apiClient.post('/inventory/snapshots', form); await load() }
-  async function load(){ setRows((await apiClient.get('/inventory/snapshots/latest')).data||[]) }
+  async function simulateOne(cnc = form.cnc_machine_id){
+    const idx = Number(String(cnc).slice(-2)) || 1
+    await apiClient.post('/inventory/snapshots', {
+      cnc_machine_id: cnc,
+      line_side_location_id: `LS-${cnc}`,
+      material_no: `MAT-CNC-${String(idx).padStart(2,'0')}`,
+      material_name: `${cnc} 線邊庫模擬料件`,
+      lot_no: `LOT-${String(idx).padStart(2,'0')}`,
+      current_qty: 40 + idx * 3,
+      reserved_qty: 5 + (idx % 3),
+      safety_stock_qty: 30,
+      source_system: 'WMS_LINE_SIDE_DEMO'
+    }).catch(showError)
+  }
+  async function simulateSelected(){ if(selectedCnc==='ALL') await simulateAll(); else { await simulateOne(selectedCnc); await load() } }
+  async function simulateAll(){ for (let i=1;i<=14;i+=1){ await simulateOne(`CNC-${String(i).padStart(2,'0')}`) } await load() }
+  async function load(){ setRows((await apiClient.get('/inventory/snapshots/latest?limit=200')).data||[]) }
   useEffect(()=>{load()},[])
-    const fields=[['cnc_machine_id',
-    'CNC'],
-    ['line_side_location_id',
-    '線邊庫'],
-    ['material_no',
-    '物料編號'],
-    ['material_name',
-    '物料名稱'],
-    ['lot_no',
-    '批號'],
-    ['current_qty',
-    '目前數量',
-    'number'],
-    ['reserved_qty',
-    '保留數量',
-    'number'],
-    ['safety_stock_qty',
-    '安全庫存',
-    'number']]
+  const fields=[['cnc_machine_id','CNC','cnc'],['line_side_location_id','線邊庫'],['material_no','物料編號'],['material_name','物料名稱'],['lot_no','批號'],['current_qty','目前數量','number'],['reserved_qty','保留數量','number'],['safety_stock_qty','安全庫存','number']]
   return <div className="page">
-  <PageHeader title="WMS 線邊庫">
+  <PageHeader title="WMS 線邊庫" subtitle="新增線邊庫資料與模擬資料皆支援 CNC-01 ~ CNC-14。">
+  <select value={selectedCnc} className="select-control" onChange={e=>setSelectedCnc(e.target.value)}>
+    {DASHBOARD_CNC_OPTIONS.map((cnc,index)=><option key={`inventory-cnc-${cnc}-${index}`} value={cnc}>{cnc==='ALL'?'全部 CNC':cnc}</option>)}
+  </select>
   <button className="primary-btn" onClick={create}>新增庫存快照</button>
+  <button onClick={simulateSelected}>模擬選取 CNC</button>
+  <button onClick={simulateAll}>模擬全部 14 台</button>
   <button onClick={load}>重新整理</button>
   </PageHeader>
   <div className="card">
   <h2>新增線邊庫資料</h2>
   <div className="form-grid">{fields.map(([k,label,type])=>
-  <label key={k}>{label}<input value={form[k]} type={type||'text'} onChange={e=>update(k,type==='number'?Number(e.target.value):e.target.value)} />
+  <label key={k}>{label}
+    {type==='cnc'
+      ? <select value={form[k]} onChange={e=>update(k,e.target.value)}>{DASHBOARD_CNC_OPTIONS.filter(c=>c!=='ALL').map((cnc,index)=><option key={`inv-form-${cnc}-${index}`} value={cnc}>{cnc}</option>)}</select>
+      : <input value={form[k]} type={type||'text'} onChange={e=>update(k,type==='number'?Number(e.target.value):e.target.value)} />}
   </label>)}
   </div>
   </div>
   <div className="card">
-  <h2>線邊庫清單</h2>
-  <DataTable columns={columns} rows={rows} labels={labels}/>
+  <div className="card-title-row"><h2>線邊庫清單</h2><select value={selectedCnc} className="select-control cnc-nowrap" onChange={e=>setSelectedCnc(e.target.value)}>{DASHBOARD_CNC_OPTIONS.map((cnc,index)=><option key={`inventory-table-cnc-${cnc}-${index}`} value={cnc}>{cnc==='ALL'?'全部 CNC':cnc}</option>)}</select></div>
+  <DataTable columns={columns} rows={filteredRows} labels={labels}/>
   </div>
   </div>
 }
+

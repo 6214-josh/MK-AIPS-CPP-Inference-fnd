@@ -4,6 +4,8 @@ import DataTable from './DataTable.jsx'
 import { PageHeader } from './SimplePanels.jsx'
 import flowImage from '../assets/aips-flow-1-10-with-shortage-dqn.png'
 
+const FLOW_CNC_OPTIONS = ['ALL', ...Array.from({ length: 14 }, (_, i) => `CNC-${String(i + 1).padStart(2, '0')}`)]
+
 function toArray(data) {
   return Array.isArray(data) ? data : []
 }
@@ -54,11 +56,25 @@ function SectionCard({ no, title, pageName, ready, children }) {
   )
 }
 
+function CncFlowFilter({ value, onChange, label = 'CNC 篩選' }) {
+  return (
+    <div className="cnc-table-filter flow-cnc-filter">
+      <span>{label}</span>
+      <select value={value} className="select-control cnc-nowrap" onChange={(e) => onChange(e.target.value)}>
+        {FLOW_CNC_OPTIONS.map((cnc, index) => (
+          <option key={`flow-cnc-${cnc}-${index}`} value={cnc}>{cnc === 'ALL' ? '全部 CNC' : cnc}</option>
+        ))}
+      </select>
+    </div>
+  )
+}
+
 export default function AipsFlowVerificationPanel() {
   const [loading, setLoading] = useState(false)
   const [running, setRunning] = useState('')
   const [message, setMessage] = useState('')
   const [flowResult, setFlowResult] = useState(null)
+  const [selectedCnc, setSelectedCnc] = useState('ALL')
   const [data, setData] = useState({
     sources: [],
     features: [],
@@ -91,14 +107,14 @@ export default function AipsFlowVerificationPanel() {
         apiClient.get('/aips/data-engineering/features/latest?limit=100').then((r) => toArray(r.data)).catch(() => []),
         apiClient.get('/aips/data-engineering/downstream-summary').then((r) => toArray(r.data)).catch(() => []),
         apiClient.get('/aips/data-engineering/feedback-summary').then((r) => r.data).catch(() => null),
-        apiClient.get('/aips/predictions/latest').then((r) => toArray(r.data)).catch(() => []),
+        apiClient.get('/aips/predictions/latest?limit=200').then((r) => toArray(r.data)).catch(() => []),
         apiClient.get('/run-cards/features').then((r) => toArray(r.data)).catch(() => []),
-        apiClient.get('/aips/states/latest').then((r) => toArray(r.data)).catch(() => []),
-        apiClient.get('/aips/dqn/actions/latest').then((r) => toArray(r.data)).catch(() => []),
-        apiClient.get('/aips/rewards/latest').then((r) => toArray(r.data)).catch(() => []),
-        apiClient.get('/aips/shortage-priority-dqn/decisions/latest?limit=100').then((r) => toArray(r.data)).catch(async () => {
+        apiClient.get('/aips/states/latest?limit=200').then((r) => toArray(r.data)).catch(() => []),
+        apiClient.get('/aips/dqn/actions/latest?limit=200').then((r) => toArray(r.data)).catch(() => []),
+        apiClient.get('/aips/rewards/latest?limit=200').then((r) => toArray(r.data)).catch(() => []),
+        apiClient.get('/aips/shortage-priority-dqn/decisions/latest?limit=200').then((r) => toArray(r.data)).catch(async () => {
           try {
-            const res = await apiClient.get('/aips/dqn/shortage-priority/decisions/latest?limit=100')
+            const res = await apiClient.get('/aips/dqn/shortage-priority/decisions/latest?limit=200')
             return toArray(res.data)
           } catch {
             return []
@@ -169,6 +185,18 @@ export default function AipsFlowVerificationPanel() {
     ? toArray(currentRun?.shortage_decisions)
     : data.shortageDecisions.slice(0, 12)
 
+  function matchesSelectedCnc(row) {
+    if (selectedCnc === 'ALL') return true
+    return [
+      row?.cnc_machine_id,
+      row?.assigned_cnc_machine_id,
+      row?.original_cnc_machine_id,
+      row?.suggested_cnc_machine_id,
+    ].filter(Boolean).includes(selectedCnc)
+  }
+
+  const filterBySelectedCnc = (rows) => selectedCnc === 'ALL' ? rows : toArray(rows).filter(matchesSelectedCnc)
+
   const focusedRunCardFeatures = step4RowsFromCurrentRun.length
     ? step4RowsFromCurrentRun
     : (latestRunWorkOrderNo ? data.runCardFeatures.filter((row) => row.work_order_no === latestRunWorkOrderNo) : data.runCardFeatures)
@@ -197,6 +225,15 @@ export default function AipsFlowVerificationPanel() {
       })),
   ].slice(0, 10)
 
+  const featureRowsByCnc = filterBySelectedCnc(featureRows)
+  const step3RowsByCnc = filterBySelectedCnc(step3Rows)
+  const arimaRowsByCnc = filterBySelectedCnc(arimaRows)
+  const step6RowsByCnc = filterBySelectedCnc(step6Rows)
+  const step7RowsByCnc = filterBySelectedCnc(step7Rows)
+  const step8RowsByCnc = filterBySelectedCnc(step8Rows)
+  const step10RowsByCnc = filterBySelectedCnc(step10Rows)
+  const step11RowsByCnc = filterBySelectedCnc(step11Rows)
+
   const stepOverviewRows = [
     { no: 1, name: '資料輸入層', status: Number(sourceMap.cnc_meter_raw_data?.record_count || 0) > 0 ? '可看' : '待補', page: '模擬硬體 / ERP / WMS / MES' },
     { no: 2, name: '資料治理與特徵工程', status: Number(sourceMap.aips_data_engineering_feature?.record_count || 0) > 0 ? '可看' : '待補', page: '本頁：資料工程特徵池' },
@@ -217,6 +254,7 @@ export default function AipsFlowVerificationPanel() {
         title="AIPS 1-10 流程驗證"
         subtitle="全棧實作：Step1 模擬硬體資料 → Step2 資料工程 → Step3~10 AI / DQN / Reward，並將 Reward 回饋 Step1/2。"
       >
+        <CncFlowFilter value={selectedCnc} onChange={setSelectedCnc} label="全流程 CNC" />
         <button onClick={load}>{loading ? '重新整理中...' : '重新整理'}</button>
       </PageHeader>
 
@@ -290,11 +328,12 @@ export default function AipsFlowVerificationPanel() {
       </SectionCard>
 
       <SectionCard no={2} title="資料治理與特徵工程：Step1 → Step2" pageName="本頁資料工程特徵池" ready={featureRows.length > 0}>
-        <p className="flow-help-text">這裡顯示從模擬硬體、ERP、WMS、MES 清洗/正規化後的特徵，並標示會餵給哪個後續階段。</p>
+        <p className="flow-help-text">這裡顯示從模擬硬體、ERP、WMS、MES 清洗/正規化後的特徵，並標示會餵給哪個後續階段。Step1/Step2 已補 CNC-01 ~ CNC-14 資料來源。</p>
+        <CncFlowFilter value={selectedCnc} onChange={setSelectedCnc} />
         <DataTable
           columns={['data_feature_id', 'feature_category', 'feature_name', 'cnc_machine_id', 'work_order_no', 'normalized_value', 'downstream_stage']}
           labels={{ data_feature_id: 'ID', feature_category: '類別', feature_name: '特徵', cnc_machine_id: 'CNC', work_order_no: '製令單', normalized_value: '正規化值', downstream_stage: '送往階段' }}
-          rows={featureRows}
+          rows={featureRowsByCnc}
         />
       </SectionCard>
 
@@ -311,19 +350,21 @@ export default function AipsFlowVerificationPanel() {
       )}
 
       <SectionCard no={3} title="LSTM 產量預測" pageName="AI 生產預測" ready={step3Rows.length > 0}>
+        <CncFlowFilter value={selectedCnc} onChange={setSelectedCnc} />
         <DataTable
           columns={['work_order_no', 'cnc_machine_id', 'predicted_value', 'predicted_good_qty', 'predicted_ng_qty', 'predicted_yield_rate', 'confidence_score']}
           labels={{ work_order_no: '製令單', cnc_machine_id: 'CNC', predicted_value: '預測產量', predicted_good_qty: '良品量', predicted_ng_qty: '不良量', predicted_yield_rate: '良率', confidence_score: '信心' }}
-          rows={step3Rows}
+          rows={step3RowsByCnc}
         />
       </SectionCard>
 
       <SectionCard no={4} title="ARIMA 時間序列預測" pageName="資料工程特徵池 / 製令流程卡 AI 特徵" ready={arimaRows.length > 0}>
         {latestRunWorkOrderNo && <p className="flow-help-text">目前優先顯示本次流程卡製令：{latestRunWorkOrderNo}</p>}
+        <CncFlowFilter value={selectedCnc} onChange={setSelectedCnc} />
         <DataTable
           columns={['source', 'work_order_no', 'station_name', 'cnc_machine_id', 'arima_predicted_minutes', 'lstm_predicted_minutes', 'delay_risk_score']}
           labels={{ source: '來源', work_order_no: '製令單', station_name: '站別 / 特徵', cnc_machine_id: 'CNC', arima_predicted_minutes: 'ARIMA 預測分鐘', lstm_predicted_minutes: 'LSTM 預測分鐘', delay_risk_score: '延遲風險' }}
-          rows={arimaRows}
+          rows={arimaRowsByCnc}
         />
       </SectionCard>
 
@@ -337,19 +378,21 @@ export default function AipsFlowVerificationPanel() {
       </SectionCard>
 
       <SectionCard no={6} title="DQN State 狀態向量" pageName="DQN State" ready={step6Rows.length > 0}>
+        <CncFlowFilter value={selectedCnc} onChange={setSelectedCnc} />
         <DataTable
           columns={['state_id', 'work_order_no', 'cnc_machine_id', 'machine_status', 'delay_risk_score', 'shortage_risk_score', 'quality_risk_score', 'current_oee']}
           labels={{ state_id: 'State', work_order_no: '製令單', cnc_machine_id: 'CNC', machine_status: '機台狀態', delay_risk_score: '延遲風險', shortage_risk_score: '缺料風險', quality_risk_score: '品質風險', current_oee: 'OEE' }}
-          rows={step6Rows}
+          rows={step6RowsByCnc}
         />
       </SectionCard>
 
       <SectionCard no={7} title="DQN Q-Network" pageName="DQN 排程 Action / 模型優化" ready={step7Rows.length > 0}>
-        <p className="flow-help-text">DQN 由 Step6 State 進入 Q-Network，輸出 Action 與信心分數；詳細 Q value 可在 Action reason 內看到。</p>
+        <p className="flow-help-text">DQN 由 Step6 State 進入 Q-Network，輸出 Action 與信心分數；詳細 Q value 可在 Action reason 內看到。資料工程會保留 CNC-01 ~ CNC-14 來源。</p>
+        <CncFlowFilter value={selectedCnc} onChange={setSelectedCnc} />
         <DataTable
           columns={['action_id', 'work_order_no', 'original_cnc_machine_id', 'suggested_cnc_machine_id', 'action_name', 'action_confidence_score']}
           labels={{ action_id: 'Action', work_order_no: '製令單', original_cnc_machine_id: '原機台', suggested_cnc_machine_id: '建議機台', action_name: 'Action', action_confidence_score: '信心' }}
-          rows={step7Rows}
+          rows={step7RowsByCnc}
         />
       </SectionCard>
 
@@ -357,7 +400,7 @@ export default function AipsFlowVerificationPanel() {
         <DataTable
           columns={['action_id', 'action_type', 'action_name', 'action_reason', 'action_status']}
           labels={{ action_id: 'ID', action_type: '類型', action_name: '建議', action_reason: '原因', action_status: '狀態' }}
-          rows={step8Rows}
+          rows={step8RowsByCnc}
         />
       </SectionCard>
 
@@ -390,10 +433,11 @@ export default function AipsFlowVerificationPanel() {
       </SectionCard>
 
       <SectionCard no={10} title="Reward 計算與回饋" pageName="Reward 回饋" ready={step10Rows.length > 0}>
+        <CncFlowFilter value={selectedCnc} onChange={setSelectedCnc} />
         <DataTable
           columns={['reward_id', 'work_order_no', 'cnc_machine_id', 'reward_score', 'actual_oee', 'actual_yield_rate', 'energy_saving_rate']}
           labels={{ reward_id: 'Reward', work_order_no: '製令單', cnc_machine_id: 'CNC', reward_score: '總分', actual_oee: '實際 OEE', actual_yield_rate: '實際良率', energy_saving_rate: '節能率' }}
-          rows={step10Rows}
+          rows={step10RowsByCnc}
         />
       </SectionCard>
 
@@ -403,6 +447,7 @@ export default function AipsFlowVerificationPanel() {
           使用 shortage_risk、line-side stock、due pressure 修正 Q Value，
           並透過 Step10 Reward 回饋到下一輪 State / Action。
         </p>
+        <CncFlowFilter value={selectedCnc} onChange={setSelectedCnc} />
         <DataTable
           columns={['decision_id', 'work_order_no', 'product_no', 'cnc_machine_id', 'customer_shortage_risk_score', 'line_side_shortage_qty', 'shortage_qty', 'due_date_remaining_hours', 'selected_action_name', 'selected_q_value', 'decision_reason']}
           labels={{
@@ -418,7 +463,7 @@ export default function AipsFlowVerificationPanel() {
             selected_q_value: '修正後 Q Value',
             decision_reason: '決策原因',
           }}
-          rows={step11Rows}
+          rows={step11RowsByCnc}
           pageable={false}
         />
       </SectionCard>

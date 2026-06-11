@@ -241,7 +241,7 @@ export default function CncDailySchedulePanel() {
       </div>
 
       <div className="card">
-        <h2>依 CNC 代號排列的每日排程結果 {selectedCnc !== 'ALL' ? `：${selectedCnc}` : ''}</h2>
+        <div className="card-title-row"><h2>依 CNC 代號排列的每日排程結果 {selectedCnc !== 'ALL' ? `：${selectedCnc}` : ''}</h2><select className="select-control cnc-nowrap" value={selectedCnc} onChange={(e) => setSelectedCnc(e.target.value)}>{cncOptions.map((cnc, index) => (<option key={`daily-result-cnc-${cnc}-${index}`} value={cnc}>{cnc === 'ALL' ? '全部 CNC' : cnc}</option>))}</select></div>
         <DataTable
           columns={scheduleColumns}
           labels={scheduleLabels}
