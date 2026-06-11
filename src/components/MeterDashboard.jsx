@@ -3,6 +3,8 @@ import apiClient from '../api/apiClient'
 import DataTable from './DataTable.jsx'
 import { PageHeader } from './SimplePanels.jsx'
 
+const CNC_OPTIONS = ['ALL', ...Array.from({ length: 14 }, (_, i) => `CNC-${String(i + 1).padStart(2, '0')}`)]
+
 export default function MeterDashboard() {
   const [selectedCnc, setSelectedCnc] = useState('ALL')
   const [current, setCurrent] = useState({})
@@ -36,14 +38,11 @@ export default function MeterDashboard() {
   useEffect(()=>{ updateTime(); const id=setInterval(()=>{ updateTime(); load() },5000); return ()=>clearInterval(id) }, [selectedCnc])
 
   return <div className="page electric-page">
-  <PageHeader title="智慧電表即時監控" subtitle="智慧電表介面串聯 CNC-01 / CNC-02 / CNC-03、AIPS 特徵與 DQN State。">
+  <PageHeader title="智慧電表即時監控" subtitle="智慧電表介面串聯 CNC-01 ~ CNC-14、AIPS 特徵與 DQN State，並可檢視 14 台 CNC 智慧電表狀態。">
   <select value={selectedCnc} className="select-control" onChange={e=>setSelectedCnc(e.target.value)}>
-  <option value="ALL">全部 CNC</option>
-  <option value="CNC-01">CNC-01</option>
-  <option value="CNC-02">CNC-02</option>
-  <option value="CNC-03">CNC-03</option>
+  {CNC_OPTIONS.map(cnc => <option key={cnc} value={cnc}>{cnc === 'ALL' ? '全部 CNC' : cnc}</option>)}
   </select>
-  <button className="primary-btn" onClick={seedAll}>模擬三台 CNC 電表</button>
+  <button className="primary-btn" onClick={seedAll}>模擬全部 14 台 CNC 電表</button>
   <button onClick={load}>重新整理</button>
   </PageHeader>
   <div className="electric-dashboard">

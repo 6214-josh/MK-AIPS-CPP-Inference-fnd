@@ -148,6 +148,7 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState(readStoredUser())
   const [tab, setTab] = useState('dashboard')
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [openedGroups, setOpenedGroups] = useState([
     '總覽',
     '系統管理',
@@ -181,13 +182,46 @@ export default function App() {
     ))
   }
 
+  function selectMenuItem(key) {
+    setTab(key)
+    setMobileMenuOpen(false)
+  }
+
   if (!isLoggedIn) {
     return <LoginPage onLoginSuccess={handleLoginSuccess} />
   }
 
   return (
-    <div className={`layout ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
-      <aside className="sidebar">
+    <div className={`layout ${sidebarCollapsed ? 'sidebar-collapsed' : ''} ${mobileMenuOpen ? 'mobile-menu-open' : ''}`}>
+      <button
+        type="button"
+        className="mobile-menu-toggle"
+        onClick={() => setMobileMenuOpen(true)}
+        aria-label="開啟功能選單"
+      >
+        ☰ 選單
+      </button>
+
+      {mobileMenuOpen && (
+        <button
+          type="button"
+          className="mobile-sidebar-backdrop"
+          onClick={() => setMobileMenuOpen(false)}
+          aria-label="關閉功能選單背景"
+        />
+      )}
+
+      <aside className={`sidebar ${mobileMenuOpen ? 'mobile-open' : ''}`}>
+        <div className="mobile-sidebar-head">
+          <b>功能選單</b>
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(false)}
+            aria-label="關閉功能選單"
+          >
+            ×
+          </button>
+        </div>
         <button
           type="button"
           className="sidebar-collapse-btn"
@@ -252,7 +286,7 @@ export default function App() {
                     <button
                       key={item.key}
                       className={tab === item.key ? 'active' : ''}
-                      onClick={() => setTab(item.key)}
+                      onClick={() => selectMenuItem(item.key)}
                       title={item.label}
                     >
                       <span>{item.icon}</span>
@@ -267,7 +301,7 @@ export default function App() {
 
         <div className="sidebar-footer">
           <small>React 5074 + FastAPI 8999 + PostgreSQL</small>
-          <small>SI：國興資訊</small>
+          <small>國興資訊</small>
         </div>
       </aside>
 

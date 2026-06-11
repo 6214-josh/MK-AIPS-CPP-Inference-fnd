@@ -1917,7 +1917,7 @@ pre {
 .sidebar-si-card,
 .login-si-card {
   display: flex;
-  align-items: left;
+  align-items: center;
   gap: 12px;
   border: 1px solid #bfdbfe;
   background: #eff6ff;
@@ -1934,7 +1934,7 @@ pre {
 .login-si-card {
   margin: 12px 0 20px;
   padding: 10px 12px;
-  justify-content: left;
+  justify-content: center;
 }
 
 .si-label {
@@ -3547,7 +3547,7 @@ pre {
 
 .sidebar-collapse-btn {
   position: absolute;
-  right: -0.5rem;
+  right: -14px;
   top: 92px;
   z-index: 20;
   width: 30px;
@@ -3760,5 +3760,632 @@ pre {
   .war-ai-board-compact .war-center,
   .war-ai-board-compact .war-right {
     min-height: auto;
+  }
+}
+
+
+/* FIX95: Dashboard 避免左側選單吃字，整體往右保留安全邊界 */
+.aips-war-dashboard {
+  margin: 0 0 0 18px !important;
+  padding: 14px 16px 18px 16px !important;
+  width: calc(100% - 18px) !important;
+  overflow-x: auto;
+}
+
+.layout.sidebar-collapsed .aips-war-dashboard {
+  margin-left: 12px !important;
+  width: calc(100% - 12px) !important;
+}
+
+.aips-war-dashboard .war-toolbar,
+.aips-war-dashboard .war-section-head,
+.aips-war-dashboard .war-topbar {
+  padding-left: 8px !important;
+}
+
+.aips-war-dashboard .war-toolbar h2,
+.aips-war-dashboard .war-section-head h2 {
+  text-indent: 0;
+  white-space: normal;
+}
+
+.aips-war-dashboard .war-toolbar {
+  min-width: 1180px;
+}
+
+.aips-war-dashboard .war-topbar {
+  min-width: 1180px;
+}
+
+
+/* FIX96: 14 CNC simulator buttons + global RWD for PC/tablet/mobile */
+.cnc-button-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  max-width: 980px;
+}
+
+.compact-btn {
+  min-width: 96px;
+  padding-left: 10px !important;
+  padding-right: 10px !important;
+}
+
+@media (max-width: 1440px) {
+  .page,
+  .aips-war-dashboard {
+    max-width: 100%;
+  }
+
+  .metric-grid,
+  .summary-grid,
+  .card-grid,
+  .war-card-grid-4,
+  .war-card-grid-5 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 1024px) {
+  .layout {
+    grid-template-columns: 76px minmax(0, 1fr) !important;
+  }
+
+  .sidebar {
+    width: 76px !important;
+    min-width: 76px !important;
+  }
+
+  .sidebar .brand-title,
+  .sidebar .brand-subtitle,
+  .sidebar .user-box,
+  .sidebar .submenu,
+  .sidebar .si-text,
+  .sidebar .sidebar-footer,
+  .sidebar .nav-label,
+  .sidebar .menu-label {
+    display: none !important;
+  }
+
+  .main-content,
+  .content {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+
+  .page-header,
+  .toolbar,
+  .war-toolbar,
+  .war-topbar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+
+  .page-header-actions,
+  .war-actions {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: flex-start !important;
+  }
+
+  .war-main-grid,
+  .war-bottom-grid,
+  .war-overview-grid,
+  .war-reward-main-grid,
+  .war-machine-grid,
+  .metric-grid,
+  .summary-grid,
+  .card-grid,
+  .flow-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .table-wrap,
+  .war-table-wrap,
+  .cnc-gantt,
+  .war-gantt {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .table-wrap table,
+  .war-table,
+  .data-table-panel table {
+    min-width: 780px;
+  }
+}
+
+@media (max-width: 640px) {
+  .layout {
+    grid-template-columns: 1fr !important;
+  }
+
+  .sidebar {
+    position: sticky !important;
+    top: 0;
+    z-index: 40;
+    width: 100% !important;
+    min-width: 100% !important;
+    max-height: 68px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    display: flex;
+    align-items: center;
+  }
+
+  .main-content,
+  .content {
+    width: 100% !important;
+    margin-left: 0 !important;
+    padding: 10px !important;
+  }
+
+  .page,
+  .aips-war-dashboard {
+    margin-left: 0 !important;
+    width: 100% !important;
+    padding: 10px !important;
+  }
+
+  .metric-grid,
+  .summary-grid,
+  .card-grid,
+  .war-card-grid,
+  .war-card-grid-2,
+  .war-card-grid-3,
+  .war-card-grid-4,
+  .war-card-grid-5 {
+    grid-template-columns: 1fr !important;
+  }
+
+  .card,
+  .war-panel,
+  .metric-card {
+    border-radius: 14px !important;
+  }
+
+  button,
+  input,
+  select,
+  .primary-btn {
+    min-height: 42px;
+  }
+
+  .cnc-button-strip {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .compact-btn {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+
+/* FIX97: Mobile / iPad RWD navigation drawer */
+.mobile-menu-toggle,
+.mobile-sidebar-backdrop,
+.mobile-sidebar-head {
+  display: none;
+}
+
+/* iPad / tablet: keep content browsable and provide drawer menu */
+@media (max-width: 1180px) {
+  .mobile-menu-toggle {
+    position: fixed;
+    left: 14px;
+    bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+    z-index: 1600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-width: 96px;
+    height: 48px;
+    border-radius: 999px;
+    border: 1px solid rgba(56, 189, 248, 0.45);
+    background: linear-gradient(135deg, #0284c7, #2563eb);
+    color: #ffffff;
+    font-weight: 900;
+    box-shadow: 0 14px 32px rgba(2, 132, 199, 0.38);
+  }
+
+  .mobile-sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1490;
+    display: block;
+    border: 0;
+    border-radius: 0;
+    background: rgba(2, 6, 23, 0.58);
+    backdrop-filter: blur(3px);
+    padding: 0;
+  }
+
+  .mobile-sidebar-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 14px 10px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+    color: #e0f2fe;
+    font-weight: 900;
+    flex: 0 0 auto;
+  }
+
+  .mobile-sidebar-head button {
+    width: 38px;
+    height: 38px;
+    min-height: 38px;
+    border-radius: 12px;
+    border: 1px solid rgba(56, 189, 248, 0.32);
+    background: rgba(15, 23, 42, 0.76);
+    color: #ffffff;
+    font-size: 24px;
+    font-weight: 900;
+    line-height: 1;
+    padding: 0;
+  }
+
+  .layout {
+    display: block !important;
+    min-height: 100vh;
+  }
+
+  .sidebar {
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    z-index: 1500 !important;
+    width: min(86vw, 340px) !important;
+    min-width: min(86vw, 340px) !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    transform: translateX(-104%);
+    transition: transform 0.22s ease;
+    box-shadow: 20px 0 40px rgba(2, 6, 23, 0.46);
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  .sidebar-collapse-btn {
+    display: none !important;
+  }
+
+  .sidebar .brand-title,
+  .sidebar .brand-subtitle,
+  .sidebar .user-box,
+  .sidebar .submenu,
+  .sidebar .si-text,
+  .sidebar .sidebar-footer,
+  .sidebar .nav-label,
+  .sidebar .menu-label,
+  .sidebar .brand-text,
+  .sidebar .menu-group-title span:nth-child(2),
+  .sidebar .menu-arrow,
+  .sidebar .submenu button span:nth-child(2) {
+    display: revert !important;
+  }
+
+  .sidebar .brand {
+    padding: 12px 16px 14px !important;
+  }
+
+  .sidebar .brand-image {
+    width: 100% !important;
+    max-width: 190px !important;
+    height: auto !important;
+    object-fit: contain !important;
+  }
+
+  .sidebar .sidebar-si-card {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 54px !important;
+    justify-content: center !important;
+  }
+
+  .sidebar .side-menu {
+    align-items: stretch !important;
+    padding: 10px 10px 22px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .sidebar .menu-group-title {
+    display: grid !important;
+    grid-template-columns: 24px minmax(0, 1fr) 22px !important;
+    justify-content: initial !important;
+    gap: 8px !important;
+  }
+
+  .sidebar .submenu {
+    display: block !important;
+    margin: 5px 0 8px 16px !important;
+    padding-left: 8px !important;
+  }
+
+  .sidebar .submenu button {
+    display: grid !important;
+    grid-template-columns: 22px minmax(0, 1fr) !important;
+    justify-content: initial !important;
+    gap: 8px !important;
+    padding: 10px 10px !important;
+  }
+
+  .main-content,
+  .layout.sidebar-collapsed .main-content {
+    margin-left: 0 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .page,
+  .aips-war-dashboard {
+    margin-left: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .aips-war-dashboard {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+}
+
+/* phone: show dashboard/content first and open full menu via floating button */
+@media (max-width: 640px) {
+  body {
+    overflow-x: hidden;
+  }
+
+  .mobile-menu-toggle {
+    left: 12px;
+    right: 12px;
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    width: calc(100% - 24px);
+    height: 50px;
+    font-size: 16px;
+  }
+
+  .sidebar {
+    width: min(92vw, 360px) !important;
+    min-width: min(92vw, 360px) !important;
+  }
+
+  .main-content,
+  .content {
+    width: 100% !important;
+    margin-left: 0 !important;
+    padding: 8px !important;
+  }
+
+  .page {
+    padding: 14px 12px 76px !important;
+  }
+
+  .page-title {
+    font-size: clamp(28px, 9vw, 44px) !important;
+    line-height: 1.18 !important;
+    word-break: keep-all;
+  }
+
+  .page-subtitle {
+    font-size: clamp(16px, 4.6vw, 22px) !important;
+    line-height: 1.65 !important;
+  }
+
+  .toolbar,
+  .page-header-actions,
+  .war-actions,
+  .cnc-button-strip {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    width: 100%;
+    gap: 10px !important;
+  }
+
+  .toolbar button,
+  .page-header-actions button,
+  .war-actions button,
+  .war-actions select,
+  .war-actions input,
+  .cnc-button-strip button {
+    width: 100% !important;
+    min-height: 46px !important;
+  }
+
+  .metric-grid,
+  .summary-grid,
+  .card-grid,
+  .war-card-grid,
+  .war-card-grid-2,
+  .war-card-grid-3,
+  .war-card-grid-4,
+  .war-card-grid-5 {
+    grid-template-columns: 1fr !important;
+  }
+
+  .metric-card,
+  .card,
+  .war-panel {
+    padding: 18px !important;
+    border-radius: 18px !important;
+  }
+
+  .metric-value {
+    font-size: 40px !important;
+  }
+
+  .table-wrap,
+  .war-table-wrap,
+  .data-table-panel,
+  .cnc-gantt,
+  .war-gantt {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .table-wrap table,
+  .war-table,
+  .data-table-panel table {
+    min-width: 780px;
+  }
+
+  .aips-war-dashboard {
+    padding: 10px 10px 76px !important;
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+
+  .war-topbar,
+  .war-toolbar {
+    min-width: 0 !important;
+  }
+
+  .war-tabs {
+    overflow-x: auto !important;
+    padding-bottom: 4px;
+  }
+
+  .war-tabs button {
+    flex: 0 0 auto;
+  }
+}
+
+/* FIX98: reward dashboard left summary sidebar to match design */
+.war-reward-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 300px) minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.war-reward-sidebar,
+.war-reward-main-content {
+  display: grid;
+  gap: 12px;
+}
+
+.war-reward-summary-stack {
+  display: grid;
+  gap: 10px;
+}
+
+.war-reward-summary-panel .war-kpi-tile {
+  min-height: 112px;
+}
+
+.war-reward-improvement-list {
+  display: grid;
+  gap: 10px;
+}
+
+.war-reward-improvement-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(2, 132, 199, 0.08);
+  border: 1px solid rgba(56, 189, 248, 0.16);
+}
+
+.war-reward-improvement-item span {
+  color: #dbeafe;
+  font-size: 13px;
+}
+
+.war-reward-improvement-item b {
+  color: #ffffff;
+  font-size: 14px;
+}
+
+.war-reward-improvement-item em {
+  font-style: normal;
+  font-weight: 800;
+  text-align: right;
+}
+
+.war-reward-improvement-item em.pos { color: #4ade80; }
+.war-reward-improvement-item em.neg { color: #f87171; }
+
+.war-filter-form {
+  display: grid;
+  gap: 10px;
+}
+
+.war-filter-form label {
+  display: grid;
+  gap: 6px;
+}
+
+.war-filter-form label span {
+  font-size: 12px;
+  color: #93c5fd;
+}
+
+.war-filter-form select,
+.war-filter-form input {
+  width: 100%;
+  min-height: 38px;
+  border-radius: 10px;
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  background: rgba(2, 6, 23, 0.55);
+  color: #fff;
+  padding: 8px 10px;
+}
+
+.war-filter-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.war-filter-actions button {
+  width: 100%;
+}
+
+@media (max-width: 1200px) {
+  .war-reward-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .war-reward-sidebar {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: start;
+  }
+}
+
+@media (max-width: 900px) {
+  .war-reward-sidebar {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .war-reward-layout,
+  .war-reward-sidebar,
+  .war-reward-main-content {
+    grid-template-columns: 1fr !important;
+  }
+
+  .war-filter-actions {
+    grid-template-columns: 1fr;
   }
 }

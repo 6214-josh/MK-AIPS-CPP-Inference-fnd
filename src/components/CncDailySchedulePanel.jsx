@@ -24,7 +24,9 @@ function CncStat({ row }) {
   )
 }
 
-function GanttByCnc({ rows }) {
+const ALL_CNC_CODES = Array.from({ length: 14 }, (_, i) => `CNC-${String(i + 1).padStart(2, '0')}`)
+
+function GanttByCnc({ rows, cncCodes = ALL_CNC_CODES }) {
   const grouped = useMemo(() => {
     const map = {}
     rows.forEach((row) => {
@@ -36,7 +38,9 @@ function GanttByCnc({ rows }) {
 
   return (
     <div className="cnc-gantt">
-      {Object.entries(grouped).map(([cnc, items]) => (
+      {cncCodes.map((cnc) => {
+        const items = grouped[cnc] || []
+        return (
         <div className="cnc-gantt-row" key={cnc}>
           <div className="cnc-gantt-label">{cnc}</div>
           <div className="cnc-gantt-track">
@@ -56,7 +60,8 @@ function GanttByCnc({ rows }) {
             ))}
           </div>
         </div>
-      ))}
+        )
+      })}
     </div>
   )
 }
@@ -175,7 +180,7 @@ export default function CncDailySchedulePanel() {
     const values = new Set()
     summary.forEach((row) => row.cnc_machine_id && values.add(row.cnc_machine_id))
     rows.forEach((row) => row.cnc_machine_id && values.add(row.cnc_machine_id))
-    return ['ALL', ...Array.from(values).sort()]
+    return ['ALL', ...Array.from(new Set([...ALL_CNC_CODES, ...Array.from(values)])).sort()]
   }, [summary, rows])
 
   const filteredSummary = selectedCnc === 'ALL'
@@ -195,7 +200,7 @@ export default function CncDailySchedulePanel() {
     <div className="page">
       <PageHeader
         title="CNC 每日排程統計"
-        subtitle="模擬一天 8 小時排程，根據 CNC-01 / CNC-02 / CNC-03 分機台排列，並檢查每個成品最多三個 CNC 加工步驟。"
+        subtitle="模擬一天 8 小時排程，根據 CNC-01 ~ CNC-14 分機台排列，並檢查每個成品最多三個 CNC 加工步驟。"
       >
         <input
           type="date"
@@ -208,8 +213,8 @@ export default function CncDailySchedulePanel() {
           onChange={(e) => setSelectedCnc(e.target.value)}
           title="依 CNC 代號篩選"
         >
-          {cncOptions.map((cnc) => (
-            <option key={cnc} value={cnc}>
+          {cncOptions.map((cnc, index) => (
+            <option key={`${cnc}-${index}`} value={cnc}>
               {cnc === 'ALL' ? '全部 CNC' : cnc}
             </option>
           ))}
@@ -232,7 +237,7 @@ export default function CncDailySchedulePanel() {
         <p className="section-note">
           橫軸代表 08:00 ~ 16:00，依 CNC 代號分列。可用上方下拉選單只看單一 CNC。紅色代表超過 8 小時產能但仍保留供檢查。同一製令 + 成品代號最多只排 3 個 CNC 加工步驟。
         </p>
-        <GanttByCnc rows={filteredGanttRows} />
+        <GanttByCnc rows={filteredGanttRows} cncCodes={selectedCnc === 'ALL' ? ALL_CNC_CODES : [selectedCnc]} />
       </div>
 
       <div className="card">

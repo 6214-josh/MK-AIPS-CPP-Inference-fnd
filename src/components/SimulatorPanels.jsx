@@ -64,10 +64,12 @@ export function CncMeterSimulator(){
   useEffect(()=>{load()},[])
   return <div className="page">
   <PageHeader title="CNC 機台 + 智慧電表模擬器" subtitle="智慧電表資料已改為 FFA 電表介面資料格式，並與 CNC、AIPS 特徵工程、DQN State 串聯。">
-  <button className="primary-btn" onClick={()=>sendMeter('CNC-01')}>模擬 CNC-01</button>
-  <button className="primary-btn" onClick={()=>sendMeter('CNC-02')}>模擬 CNC-02</button>
-  <button className="primary-btn" onClick={()=>sendMeter('CNC-03')}>模擬 CNC-03</button>
-  <button onClick={seedAll}>模擬全部</button>
+  <div className="cnc-button-strip">
+    {Array.from({ length: 14 }, (_, i) => `CNC-${String(i + 1).padStart(2, '0')}`).map((cnc) => (
+      <button className="primary-btn compact-btn" key={cnc} onClick={() => sendMeter(cnc)}>模擬 {cnc}</button>
+    ))}
+  </div>
+  <button onClick={seedAll}>模擬全部 14 台</button>
   <button onClick={load}>重新整理</button>
   </PageHeader>
   <div className="card">

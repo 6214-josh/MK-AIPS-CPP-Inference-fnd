@@ -218,11 +218,11 @@ function StatusDistribution({ kpi }) {
 function Heatmap({ rows }) {
   return (
     <div className="war-heatmap">
-      {(rows || []).map((row) => {
+      {(rows || []).map((row, index) => {
         const rate = Number(row.utilization_rate || 0)
         const tone = rate >= 90 ? 'hot' : rate >= 70 ? 'warm' : rate <= 45 ? 'cool' : 'ok'
         return (
-          <div key={row.cnc_machine_id} className={`war-heatmap-cell ${tone}`}>
+          <div key={`${row.cnc_machine_id}-${index}`} className={`war-heatmap-cell ${tone}`}>
             <b>{row.cnc_machine_id}</b>
             <span>{formatPercent(rate, 0)}</span>
             <small>{row.status === 'ALARM' ? '異常' : row.ai_judgement}</small>
@@ -245,7 +245,7 @@ function SimpleTable({ columns, labels, rows, max = 8, emptyText = '目前沒有
         </thead>
         <tbody>
           {visibleRows.length ? visibleRows.map((row, index) => (
-            <tr key={row.id || row.schedule_id || row.reward_id || row.action_id || row.work_order_no || row.cnc_machine_id || index}>
+            <tr key={`${row.id || row.schedule_id || row.reward_id || row.reward_log_id || row.action_id || row.work_order_no || row.cnc_machine_id || row.product_no || "row"}-${index}`}>
               {columns.map((c) => <td key={c}>{row[c] ?? '-'}</td>)}
             </tr>
           )) : (
@@ -424,7 +424,7 @@ function RewardTimeline({ rows }) {
           const color = REWARD_EVENT_COLORS[index % REWARD_EVENT_COLORS.length]
           return (
             <span
-              key={`track-${row.reward_id || row.reward_log_id || index}`}
+              key={`track-${row.reward_id || row.reward_log_id || row.work_order_no || "event"}-${index}`}
               className="war-track-node"
               style={{ '--node-fill': color.fill, '--node-stroke': color.stroke }}
             >
@@ -437,7 +437,7 @@ function RewardTimeline({ rows }) {
         {visible.length ? visible.map((row, index) => {
           const color = REWARD_EVENT_COLORS[index % REWARD_EVENT_COLORS.length]
           return (
-            <div key={row.reward_id || row.reward_log_id || index} className={`war-event-card tone-${row.delta >= 0 ? 'good' : 'bad'}`}>
+            <div key={`${row.reward_id || row.reward_log_id || row.work_order_no || "event"}-${index}`} className={`war-event-card tone-${row.delta >= 0 ? 'good' : 'bad'}`}>
               <div className="war-event-head">
                 <strong>{String(row.reward_time || row.calculated_at || '').slice(11, 19) || '--:--:--'}</strong>
                 <span>{row.action_name || row.action_type || 'DQN Action'}</span>
@@ -483,6 +483,12 @@ export default function CncDashboardPanel() {
   const [actionRows, setActionRows] = useState([])
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
+  const [rewardFilters, setRewardFilters] = useState({
+    timeRange: '24h',
+    runId: 'ALL',
+    scope: 'ALL',
+    actionType: 'ALL',
+  })
 
   async function load(targetDate = scheduleDate) {
     setLoading(true)
@@ -516,7 +522,25 @@ export default function CncDashboardPanel() {
   async function aiReschedule() {
     setLoading(true)
     try {
-      const res = await apiClient.post(`/aips/cnc-dashboard/ai-reschedule?schedule_date=${scheduleDate}`)
+      let res
+      try {
+        res = await apiClient.post(`/aips/cnc-dashboard/ai-reschedule?schedule_date=${scheduleDate}`, {}, { timeout: 60000 })
+      } catch (firstErr) {
+        if (firstErr?.response?.status === 404) {
+          try {
+            res = await apiClient.get(`/aips/cnc-dashboard/ai-reschedule?schedule_date=${scheduleDate}`, { timeout: 60000 })
+          } catch (secondErr) {
+            if (secondErr?.response?.status === 404) {
+              res = await apiClient.post(`/aips/cnc-dashboard/reschedule?schedule_date=${scheduleDate}`, {}, { timeout: 60000 })
+            } else {
+              throw secondErr
+            }
+          }
+        } else {
+          throw firstErr
+        }
+      }
+
       const cmp = res.data.comparison || {}
       setMessage(`AI 重排完成：延遲工單 ${cmp.delayed_orders_before ?? 0} → ${cmp.delayed_orders_after ?? 0}，缺貨風險 ${cmp.shortage_risk_before ?? 0} → ${cmp.shortage_risk_after ?? 0}`)
       await load(scheduleDate)
@@ -537,7 +561,7 @@ export default function CncDashboardPanel() {
 
   const cards = data.cards || []
   const kpi = data.kpi || {}
-  const cncOptions = ['ALL', ...cards.map((c) => c.cnc_machine_id).filter(Boolean).sort()]
+  const cncOptions = ['ALL', ...Array.from(new Set(cards.map((c) => c.cnc_machine_id).filter(Boolean))).sort()]
   const filteredCards = selectedCnc === 'ALL' ? cards : cards.filter((c) => c.cnc_machine_id === selectedCnc)
   const filteredGantt = selectedCnc === 'ALL' ? (data.gantt_rows || []) : (data.gantt_rows || []).filter((r) => r.cnc_machine_id === selectedCnc)
   const filteredHeatmap = selectedCnc === 'ALL' ? (data.heatmap_rows || []) : (data.heatmap_rows || []).filter((r) => r.cnc_machine_id === selectedCnc)
@@ -702,6 +726,117 @@ export default function CncDashboardPanel() {
     { metric: '缺料風險', original: `${data.reschedule_comparison.shortage_risk_before} 件`, dqn: `${data.reschedule_comparison.shortage_risk_after} 件`, improvement: `-${data.reschedule_comparison.shortage_risk_improvement} 件` },
   ] : []
 
+  const rewardRunOptions = useMemo(() => {
+    const values = Array.from(new Set((rewardRows || []).map((row) => row.schedule_run_id).filter(Boolean)))
+    return values
+  }, [rewardRows])
+
+  const rewardActionTypeOptions = useMemo(() => {
+    const values = Array.from(new Set((rewardRows || []).map((row) => row.action_type || row.action_name).filter(Boolean)))
+    return values
+  }, [rewardRows])
+
+  const filteredRewardRows = useMemo(() => {
+    let rows = [...(rewardRows || [])]
+    const latestMs = rows.reduce((max, row) => {
+      const value = Date.parse(row.reward_time || row.calculated_at || '')
+      return Number.isFinite(value) ? Math.max(max, value) : max
+    }, 0)
+
+    if (rewardFilters.timeRange !== 'ALL' && latestMs > 0) {
+      const rangeHours = { '6h': 6, '12h': 12, '24h': 24, '7d': 168 }[rewardFilters.timeRange] || 24
+      const minMs = latestMs - rangeHours * 60 * 60 * 1000
+      rows = rows.filter((row) => {
+        const value = Date.parse(row.reward_time || row.calculated_at || '')
+        return !Number.isFinite(value) || value >= minMs
+      })
+    }
+
+    if (rewardFilters.runId !== 'ALL') {
+      rows = rows.filter((row) => String(row.schedule_run_id || '') === String(rewardFilters.runId))
+    }
+
+    if (rewardFilters.scope !== 'ALL') {
+      rows = rows.filter((row) => String(row.reward_scope || '') === String(rewardFilters.scope))
+    }
+
+    if (rewardFilters.actionType !== 'ALL') {
+      rows = rows.filter((row) => String(row.action_type || row.action_name || '') === String(rewardFilters.actionType))
+    }
+
+    return rows
+  }, [rewardRows, rewardFilters])
+
+  const filteredRewardStats = useMemo(() => {
+    const rows = filteredRewardRows
+    const scores = rows.map((row) => Number(row.reward_score || row.reward_after || 0)).filter((v) => Number.isFinite(v))
+    const avgScore = scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : 0
+    const current = scores.length ? scores[0] : 0
+    const maxScore = scores.length ? Math.max(...scores) : 0
+    const minScore = scores.length ? Math.min(...scores) : 0
+    const distributionRanges = [
+      { label: '90 ~ 100（優秀）', min: 90, max: 101, cls: 'good' },
+      { label: '80 ~ 90（良好）', min: 80, max: 90, cls: 'cool' },
+      { label: '70 ~ 80（普通）', min: 70, max: 80, cls: 'warn' },
+      { label: '60 ~ 70（偏低）', min: 60, max: 70, cls: 'warm' },
+      { label: '< 60（不佳）', min: -999, max: 60, cls: 'bad' },
+    ]
+    const distribution = distributionRanges.map((range) => {
+      const count = scores.filter((value) => value >= range.min && value < range.max).length
+      const pct = scores.length ? count / scores.length * 100 : 0
+      return { ...range, count, pct }
+    })
+    const totals = rows.reduce((acc, row) => {
+      acc.shortage += Number(row.reward_shortage_score || 0)
+      acc.delivery += Number(row.reward_delivery_score || 0)
+      acc.oee += Number(row.reward_oee_score || 0)
+      acc.quality += Number(row.reward_quality_score || 0)
+      acc.energy += Number(row.reward_energy_score || 0)
+      return acc
+    }, { shortage: 0, delivery: 0, oee: 0, quality: 0, energy: 0 })
+    const sum = totals.shortage + totals.delivery + totals.oee + totals.quality + totals.energy || 1
+    const composition = [
+      { label: '避免缺貨', pct: totals.shortage / sum * 100, cls: 'good' },
+      { label: '準時交貨', pct: totals.delivery / sum * 100, cls: 'cool' },
+      { label: 'OEE 提升', pct: totals.oee / sum * 100, cls: 'warn' },
+      { label: '品質風險', pct: totals.quality / sum * 100, cls: 'violet' },
+      { label: '減少換線時間 / 能耗', pct: totals.energy / sum * 100, cls: 'orange' },
+    ]
+    return {
+      current,
+      avgScore,
+      maxScore,
+      minScore,
+      distribution,
+      composition,
+      actionCount: rows.length,
+      autoActionCount: rows.filter((row) => (row.action_status || '').toLowerCase().includes('auto') || row.auto_execute_flag === true).length,
+      manualActionCount: rows.filter((row) => !((row.action_status || '').toLowerCase().includes('auto') || row.auto_execute_flag === true)).length,
+    }
+  }, [filteredRewardRows])
+
+  const filteredRewardTimelineRows = useMemo(() => {
+    const source = rewardLogDashboard.timeline?.length ? filteredRewardRows : filteredRewardRows
+    const chronological = [...(source || [])].slice(0, 24).reverse()
+    if (chronological.length <= 6) return chronological
+    const indexes = Array.from({ length: 6 }, (_, i) => Math.round((chronological.length - 1) * i / 5))
+    return indexes.map((idx) => chronological[idx]).filter(Boolean)
+  }, [filteredRewardRows, rewardLogDashboard])
+
+  const rewardImprovementRows = useMemo(() => {
+    const rows = filteredRewardRows
+    const positive = rows.filter((row) => Number(row.delta || 0) > 0)
+    const negative = rows.filter((row) => Number(row.delta || 0) < 0)
+    const avgDelta = rows.length ? rows.reduce((sum, row) => sum + Number(row.delta || 0), 0) / rows.length : 0
+    const avgOee = rows.length ? rows.reduce((sum, row) => sum + Number(row.reward_oee_score || 0), 0) / rows.length : 0
+    return [
+      { label: '正向改善事件', value: `${positive.length} 筆`, delta: `${positive.length ? '+' : ''}${positive.length}` },
+      { label: '需持續追蹤事件', value: `${negative.length} 筆`, delta: `${negative.length ? '-' : ''}${negative.length}` },
+      { label: '平均 Reward 改善', value: formatNumber(avgDelta, 1), delta: `${avgDelta >= 0 ? '+' : ''}${formatNumber(avgDelta, 1)}` },
+      { label: '平均 OEE 回饋', value: formatNumber(avgOee, 1), delta: `${avgOee >= 0 ? '+' : ''}${formatNumber(avgOee, 1)}` },
+    ]
+  }, [filteredRewardRows])
+
   function renderOverviewTab() {
     return (
       <div className="war-content-stack">
@@ -857,40 +992,112 @@ export default function CncDashboardPanel() {
   }
 
   function renderRewardTab() {
+    const stats = filteredRewardStats
     return (
       <div className="war-content-stack">
         {sectionTitle('DQN Reward 分析', '依 Word 設計：Reward Log 以 DQN 排程決策事件為核心，Key = schedule_run_id + decision_step_no + reward_scope + work_order_no + operation_seq + machine_id + action_code。')}
-        <div className="war-card-grid war-card-grid-5">
-          <KpiTile label="目前總 Reward 分數" value={`${formatNumber(rewardStats.current, 1)} / 100`} sub="最新一筆" tone="good" />
-          <KpiTile label="平均 Reward（最近 24H）" value={`${formatNumber(rewardStats.avgScore, 1)} / 100`} sub="持續學習成效" tone="good" />
-          <KpiTile label="最高 Reward" value={`${formatNumber(rewardStats.maxScore, 1)} / 100`} sub="近期最佳結果" tone="good" />
-          <KpiTile label="最低 Reward" value={`${formatNumber(rewardStats.minScore, 1)} / 100`} sub="需持續改善" tone="warn" />
-          <KpiTile label="已執行 Action 總數" value={`${rewardStats.actionCount} 筆`} sub={`自動 ${rewardStats.autoActionCount} / 人工 ${rewardStats.manualActionCount}`} tone="good" />
-        </div>
 
-        <div className="war-reward-main-grid">
-          <div className="war-panel war-reward-chart-panel">
-            <RewardTrendChart rows={rewardRows} events={rewardTimelineRows} />
+        <div className="war-reward-layout">
+          <aside className="war-reward-sidebar">
+            <section className="war-panel war-reward-summary-panel">
+              <h3>即時 DQN Reward 總覽</h3>
+              <div className="war-reward-summary-stack">
+                <KpiTile label="目前總 Reward 分數" value={`${formatNumber(stats.current, 1)} / 100`} sub="較前次變化依篩選結果計算" tone="good" />
+                <KpiTile label="平均 Reward（最近 24 小時）" value={`${formatNumber(stats.avgScore, 1)} / 100`} sub="依目前條件篩選" tone="good" />
+                <KpiTile label="最高 Reward（最近 24 小時）" value={`${formatNumber(stats.maxScore, 1)} / 100`} sub="近期最佳結果" tone="good" />
+                <KpiTile label="最低 Reward（最近 24 小時）" value={`${formatNumber(stats.minScore, 1)} / 100`} sub="需要持續改善" tone="warn" />
+                <KpiTile label="已執行 Action 總數" value={`${stats.actionCount} 筆`} sub={`自動 ${stats.autoActionCount} / 人工 ${stats.manualActionCount}`} tone="good" />
+              </div>
+            </section>
+
+            <section className="war-panel war-reward-improvement-panel">
+              <h3>改善效果（24H）</h3>
+              <div className="war-reward-improvement-list">
+                {rewardImprovementRows.map((item) => (
+                  <div key={item.label} className="war-reward-improvement-item">
+                    <span>{item.label}</span>
+                    <b>{item.value}</b>
+                    <em className={String(item.delta).startsWith('-') ? 'neg' : 'pos'}>{item.delta}</em>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section className="war-panel war-reward-filter-panel">
+              <h3>查詢條件</h3>
+              <div className="war-filter-form">
+                <label>
+                  <span>時間範圍</span>
+                  <select value={rewardFilters.timeRange} onChange={(e) => setRewardFilters((prev) => ({ ...prev, timeRange: e.target.value }))}>
+                    <option value="6h">最近 6 小時</option>
+                    <option value="12h">最近 12 小時</option>
+                    <option value="24h">最近 24 小時</option>
+                    <option value="7d">最近 7 天</option>
+                    <option value="ALL">全部</option>
+                  </select>
+                </label>
+                <label>
+                  <span>排程批次 (Run ID)</span>
+                  <select value={rewardFilters.runId} onChange={(e) => setRewardFilters((prev) => ({ ...prev, runId: e.target.value }))}>
+                    <option value="ALL">全部</option>
+                    {rewardRunOptions.map((item) => <option key={item} value={item}>{item}</option>)}
+                  </select>
+                </label>
+                <label>
+                  <span>Reward Scope</span>
+                  <select value={rewardFilters.scope} onChange={(e) => setRewardFilters((prev) => ({ ...prev, scope: e.target.value }))}>
+                    <option value="ALL">全部</option>
+                    <option value="WORK_ORDER">工單</option>
+                    <option value="MACHINE">機台</option>
+                    <option value="OPERATION">工序</option>
+                    <option value="SCHEDULE_GLOBAL">整體排程</option>
+                    <option value="MATERIAL">物料</option>
+                    <option value="TOOLING">刀具</option>
+                    <option value="QUALITY">品質</option>
+                    <option value="MAINTENANCE">維護</option>
+                  </select>
+                </label>
+                <label>
+                  <span>Action 類型</span>
+                  <select value={rewardFilters.actionType} onChange={(e) => setRewardFilters((prev) => ({ ...prev, actionType: e.target.value }))}>
+                    <option value="ALL">全部</option>
+                    {rewardActionTypeOptions.map((item) => <option key={item} value={item}>{item}</option>)}
+                  </select>
+                </label>
+                <div className="war-filter-actions">
+                  <button type="button" className="primary-btn" onClick={() => setRewardFilters((prev) => ({ ...prev }))}>查詢</button>
+                  <button type="button" onClick={() => setRewardFilters({ timeRange: '24h', runId: 'ALL', scope: 'ALL', actionType: 'ALL' })}>重置</button>
+                </div>
+              </div>
+            </section>
+          </aside>
+
+          <div className="war-reward-main-content">
+            <div className="war-reward-main-grid">
+              <div className="war-panel war-reward-chart-panel">
+                <RewardTrendChart rows={filteredRewardRows} events={filteredRewardTimelineRows} />
+              </div>
+              <div className="war-side-stack">
+                <RewardDistribution stats={stats} />
+                <RewardComposition stats={stats} />
+              </div>
+            </div>
+
+            <div className="war-panel">
+              <h3>Reward 事件時間軸（對應 Action）</h3>
+              <RewardTimeline rows={filteredRewardTimelineRows} />
+            </div>
+
+            <div className="war-panel">
+              <h3>DQN Reward Log 明細（即時）</h3>
+              <SimpleTable
+                columns={['reward_time', 'schedule_run_id', 'decision_step_no', 'reward_scope', 'work_order_no', 'cnc_machine_id', 'action_name', 'reward_after', 'delta', 'q_value', 'confidence_pct']}
+                labels={{ reward_time: '時間', schedule_run_id: 'Run ID', decision_step_no: 'Step', reward_scope: 'Scope', work_order_no: '工單', cnc_machine_id: '機台', action_name: 'Action', reward_after: 'Reward 總分', delta: '改善值', q_value: 'Q-Value', confidence_pct: 'Confidence' }}
+                rows={filteredRewardRows.map((row) => ({ ...row, reward_scope: scopeText(row.reward_scope), delta: `${Number(row.delta) >= 0 ? '+' : ''}${formatNumber(row.delta, 1)}` }))}
+                max={0}
+              />
+            </div>
           </div>
-          <div className="war-side-stack">
-            <RewardDistribution stats={rewardStats} />
-            <RewardComposition stats={rewardStats} />
-          </div>
-        </div>
-
-        <div className="war-panel">
-          <h3>Reward 事件時間軸（對應 Action）</h3>
-          <RewardTimeline rows={rewardTimelineRows} />
-        </div>
-
-        <div className="war-panel">
-          <h3>DQN Reward Log 明細（即時）</h3>
-          <SimpleTable
-            columns={['reward_time', 'schedule_run_id', 'decision_step_no', 'reward_scope', 'work_order_no', 'cnc_machine_id', 'action_name', 'reward_after', 'delta', 'q_value', 'confidence_pct']}
-            labels={{ reward_time: '時間', schedule_run_id: 'Run ID', decision_step_no: 'Step', reward_scope: 'Scope', work_order_no: '工單', cnc_machine_id: '機台', action_name: 'Action', reward_after: 'Reward 總分', delta: '改善值', q_value: 'Q-Value', confidence_pct: 'Confidence' }}
-            rows={rewardRows.map((row) => ({ ...row, reward_scope: scopeText(row.reward_scope), delta: `${row.delta >= 0 ? '+' : ''}${formatNumber(row.delta, 1)}` }))}
-            max={0}
-          />
         </div>
       </div>
     )
@@ -937,8 +1144,8 @@ export default function CncDashboardPanel() {
       <div className="war-content-stack">
         {sectionTitle('機台管理', '查看每台 CNC 即時狀態、目前工單、負載、電表特徵與風險。')}
         <div className="war-machine-grid">
-          {filteredCards.map((card) => (
-            <div key={card.cnc_machine_id} className="war-panel war-machine-card">
+          {filteredCards.map((card, index) => (
+            <div key={`${card.cnc_machine_id}-${index}`} className="war-panel war-machine-card">
               <div className="war-machine-head">
                 <div>
                   <h3>{card.cnc_machine_id}</h3>
@@ -1189,7 +1396,7 @@ export default function CncDashboardPanel() {
         <div className="war-actions">
           <input type="date" value={scheduleDate} onChange={(e) => setScheduleDate(e.target.value)} />
           <select value={selectedCnc} onChange={(e) => setSelectedCnc(e.target.value)}>
-            {cncOptions.map((cnc) => <option key={cnc} value={cnc}>{cnc === 'ALL' ? '全部 CNC' : cnc}</option>)}
+            {cncOptions.map((cnc, index) => <option key={`${cnc}-${index}`} value={cnc}>{cnc === 'ALL' ? '全部 CNC' : cnc}</option>)}
           </select>
           <button onClick={() => load(scheduleDate)} disabled={loading}>重新整理</button>
           <button className="war-primary-btn" onClick={aiReschedule} disabled={loading}>AI 一鍵重排</button>
