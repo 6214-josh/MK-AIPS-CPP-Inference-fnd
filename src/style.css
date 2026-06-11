@@ -4571,3 +4571,2583 @@ table td {
     width: 100%;
   }
 }
+
+/* FIX106: AI board match design - production progress and functional week/day/month switch */
+.war-production-progress {
+  border: 1px solid rgba(56, 189, 248, 0.26);
+  background: rgba(2, 6, 23, 0.30);
+  border-radius: 12px;
+  padding: 10px;
+  margin: 0 0 14px;
+  display: grid;
+  gap: 10px;
+}
+
+.war-production-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.war-production-head h3 {
+  margin: 0;
+  color: #e0f2fe;
+  font-size: 15px;
+}
+
+.war-production-head span {
+  color: #67e8f9;
+  font-weight: 900;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(103, 232, 249, 0.24);
+  background: rgba(14, 165, 233, 0.10);
+}
+
+.war-production-rings {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  justify-items: center;
+}
+
+.war-production-rings .war-mini-ring {
+  width: 64px;
+  height: 64px;
+}
+
+.war-production-rings .war-mini-ring div {
+  width: 48px;
+  height: 48px;
+}
+
+.war-production-rings .war-mini-ring b {
+  font-size: 16px;
+}
+
+.war-production-rings .war-mini-ring span {
+  font-size: 9px;
+  margin-top: -8px;
+}
+
+.war-production-progress .war-progress-row {
+  grid-template-columns: 66px 1fr 48px;
+  gap: 8px;
+}
+
+.war-production-foot {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(56, 189, 248, 0.14);
+}
+
+.war-production-foot span {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  color: #bfdbfe;
+  font-size: 12px;
+}
+
+.war-production-foot b {
+  color: #22c55e;
+}
+
+.war-mini-switch button {
+  min-width: 28px;
+  height: 24px;
+  border-radius: 7px;
+  border: 0;
+  display: grid;
+  place-items: center;
+  color: #93c5fd;
+  font-size: 12px;
+  font-weight: 800;
+  background: transparent;
+  padding: 0 8px;
+  cursor: pointer;
+}
+
+.war-mini-switch button.active {
+  color: #fff;
+  background: #2563eb;
+  box-shadow: 0 0 10px rgba(37, 99, 235, .38);
+}
+
+.war-mini-switch button:hover {
+  color: #fff;
+  background: rgba(37, 99, 235, 0.52);
+}
+
+.war-gantt-week .war-gantt-track,
+.war-gantt-month .war-gantt-track {
+  background:
+    repeating-linear-gradient(90deg, rgba(148,163,184,.16) 0 1px, transparent 1px 14.285%),
+    rgba(2, 6, 23, 0.18);
+}
+
+.war-gantt-month .war-gantt-track {
+  background:
+    repeating-linear-gradient(90deg, rgba(148,163,184,.16) 0 1px, transparent 1px 20%),
+    rgba(2, 6, 23, 0.18);
+}
+
+.war-status-distribution .war-donut {
+  background: conic-gradient(#22c55e 0 64%, #eab308 64% 78%, #ef4444 78% 85%, #8b5cf6 85% 92%, #64748b 92% 100%);
+}
+
+@media (max-width: 1400px) {
+  .war-production-rings {
+    grid-template-columns: repeat(3, 64px);
+    justify-content: start;
+  }
+}
+
+@media (max-width: 640px) {
+  .war-production-rings {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .war-production-progress .war-progress-row {
+    grid-template-columns: 72px 1fr 52px;
+  }
+}
+
+
+/* FIX107: AI 排程看板下半部完整補入（依設計圖紅框） */
+.war-ai-bottom-block {
+  display: grid;
+  grid-template-columns: 1.05fr 1.2fr 1.2fr 0.95fr 0.85fr 0.95fr;
+  grid-template-areas:
+    "learning orders orders material tools alerts"
+    "decision decision schedule schedule reward reschedule";
+  gap: 10px;
+  width: 100%;
+  min-width: 1380px;
+  margin-top: 10px;
+}
+
+.war-ai-bottom-block .war-panel {
+  min-height: 0;
+  padding: 12px;
+  background: linear-gradient(180deg, rgba(8, 47, 73, 0.98), rgba(2, 27, 45, 0.98));
+  border: 1px solid rgba(34, 211, 238, 0.28);
+  box-shadow: inset 0 0 24px rgba(14, 165, 233, 0.08);
+}
+
+.war-ai-bottom-block h3 {
+  margin: 0 0 9px;
+  color: #e0f2fe;
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 0.2px;
+}
+
+.war-ai-learning-panel { grid-area: learning; }
+.war-ai-orders-panel { grid-area: orders; }
+.war-ai-bottom-block .war-ai-table-panel:nth-of-type(3) { grid-area: material; }
+.war-ai-bottom-block .war-ai-table-panel:nth-of-type(4) { grid-area: tools; }
+.war-ai-bottom-block .war-ai-table-panel:nth-of-type(5) { grid-area: alerts; }
+.war-ai-decision-panel { grid-area: decision; }
+.war-ai-schedule-summary { grid-area: schedule; }
+.war-ai-reward-panel { grid-area: reward; }
+.war-ai-reschedule-panel { grid-area: reschedule; }
+
+.war-ai-bottom-block .war-table-wrap {
+  max-height: 168px;
+  overflow: auto;
+  border-radius: 8px;
+  background: rgba(2, 6, 23, 0.18);
+}
+
+.war-ai-bottom-block .war-table {
+  font-size: 12px;
+}
+
+.war-ai-bottom-block .war-table th,
+.war-ai-bottom-block .war-table td {
+  padding: 7px 8px;
+  white-space: nowrap;
+}
+
+.war-learning-expanded {
+  display: grid;
+  gap: 10px;
+}
+
+.war-learning-expanded span {
+  color: #bae6fd;
+  font-size: 13px;
+}
+
+.war-learning-expanded strong {
+  display: block;
+  color: #f8fafc;
+  font-size: 20px;
+  margin-top: 4px;
+}
+
+.war-learning-mini-chart {
+  display: flex;
+  align-items: end;
+  gap: 3px;
+  height: 54px;
+  padding: 8px 8px 4px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(34, 197, 94, 0.16), rgba(14, 165, 233, 0.08));
+  border: 1px solid rgba(34, 197, 94, 0.18);
+}
+
+.war-learning-mini-chart.small {
+  height: 38px;
+  min-width: 120px;
+  margin-top: 6px;
+}
+
+.war-learning-mini-chart i {
+  flex: 1;
+  min-width: 3px;
+  border-radius: 999px 999px 0 0;
+  background: linear-gradient(180deg, #4ade80, #06b6d4);
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.45);
+}
+
+.war-learning-meter {
+  display: grid;
+  gap: 6px;
+}
+
+.war-learning-meter > div {
+  height: 11px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.25);
+  overflow: hidden;
+}
+
+.war-learning-meter > div i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #22d3ee, #38bdf8, #4ade80);
+}
+
+.war-decision-grid-bottom {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.war-comparison-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.war-comparison-grid .war-kpi-tile,
+.war-decision-grid-bottom .war-kpi-tile {
+  min-height: 86px;
+  padding: 10px;
+}
+
+.war-reward-compact {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.war-reward-compact strong {
+  display: block;
+  color: #f8fafc;
+  font-size: 24px;
+  line-height: 1.2;
+}
+
+.war-reward-trophy {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background: rgba(245, 158, 11, 0.18);
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  font-size: 28px;
+}
+
+.war-reschedule-box {
+  display: grid;
+  gap: 8px;
+  color: #cbd5e1;
+}
+
+.war-reschedule-box span {
+  font-size: 13px;
+}
+
+.war-reschedule-box b {
+  color: #67e8f9;
+}
+
+.war-reschedule-box .primary-btn {
+  width: 100%;
+  justify-content: center;
+  min-height: 42px;
+  margin-top: 4px;
+}
+
+@media (max-width: 1400px) {
+  .war-ai-bottom-block {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      "learning decision"
+      "orders orders"
+      "material tools"
+      "schedule schedule"
+      "reward reschedule";
+    min-width: 0;
+  }
+
+  .war-comparison-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .war-ai-bottom-block {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "learning"
+      "decision"
+      "orders"
+      "material"
+      "tools"
+      "schedule"
+      "reward"
+      "reschedule";
+  }
+
+  .war-comparison-grid,
+  .war-decision-grid-bottom {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* FIX108: AI 排程看板依設計圖壓縮留白、移除重複 DQN/Reward 視覺 */
+.war-ai-board-compact {
+  gap: 10px !important;
+}
+
+.war-ai-board-compact .war-main-grid-original {
+  grid-template-columns: 250px minmax(760px, 1fr) 320px !important;
+  align-items: start !important;
+  min-height: 0 !important;
+  gap: 10px !important;
+}
+
+.war-ai-board-compact .war-left,
+.war-ai-board-compact .war-center,
+.war-ai-board-compact .war-right {
+  min-height: 0 !important;
+  height: auto !important;
+  align-self: start !important;
+}
+
+.war-ai-board-compact .war-center {
+  padding: 12px !important;
+}
+
+.war-ai-board-compact .war-panel-title-row {
+  margin-bottom: 5px !important;
+}
+
+.war-ai-board-compact .war-panel-title-row p {
+  margin-top: 2px !important;
+}
+
+.war-ai-board-compact .war-legend {
+  margin-bottom: 5px !important;
+  gap: 10px !important;
+}
+
+.war-ai-board-compact .war-gantt-header,
+.war-ai-board-compact .war-gantt-row {
+  grid-template-columns: 68px 70px repeat(7, minmax(76px, 1fr)) 58px !important;
+  min-width: 970px !important;
+}
+
+.war-ai-board-compact .war-gantt-header {
+  padding: 5px 0 !important;
+}
+
+.war-ai-board-compact .war-gantt-row {
+  height: 30px !important;
+}
+
+.war-ai-board-compact .war-gantt-track {
+  height: 22px !important;
+}
+
+.war-ai-board-compact .war-gantt-bar {
+  top: 2px !important;
+  height: 18px !important;
+  font-size: 10px !important;
+}
+
+.war-ai-board-compact .war-status-dot {
+  width: 14px !important;
+  height: 14px !important;
+}
+
+.war-ai-board-compact .war-right .war-table-wrap {
+  max-height: 116px !important;
+}
+
+.war-ai-board-compact .war-status-distribution {
+  grid-template-columns: 86px 1fr !important;
+  gap: 8px !important;
+}
+
+.war-ai-board-compact .war-donut {
+  width: 80px !important;
+  height: 80px !important;
+}
+
+.war-ai-board-compact .war-heatmap {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 6px !important;
+}
+
+.war-ai-board-compact .war-heatmap-cell {
+  min-height: 54px !important;
+  padding: 6px !important;
+}
+
+/* 下半部對齊設計圖：不再重複 DQN 學習狀態，左下直接放 DQN 決策分析 */
+.war-ai-bottom-block {
+  grid-template-columns: 1.15fr 1.15fr 1fr .9fr 1fr !important;
+  grid-template-areas:
+    "orders orders material tools alerts"
+    "decision schedule schedule reward reschedule" !important;
+  gap: 8px !important;
+  margin-top: 8px !important;
+  min-width: 1260px !important;
+}
+
+.war-ai-bottom-block .war-panel {
+  padding: 10px !important;
+  border-radius: 10px !important;
+}
+
+.war-ai-bottom-block h3 {
+  margin-bottom: 7px !important;
+  font-size: 14px !important;
+}
+
+.war-ai-orders-panel { grid-area: orders !important; }
+.war-ai-material-panel { grid-area: material !important; }
+.war-ai-tools-panel { grid-area: tools !important; }
+.war-ai-alert-panel { grid-area: alerts !important; }
+.war-ai-decision-panel { grid-area: decision !important; }
+.war-ai-schedule-summary { grid-area: schedule !important; }
+.war-ai-reward-panel { grid-area: reward !important; }
+.war-ai-reschedule-panel { grid-area: reschedule !important; }
+
+.war-ai-bottom-block .war-table-wrap {
+  max-height: 130px !important;
+}
+
+.war-ai-bottom-block .war-table th,
+.war-ai-bottom-block .war-table td {
+  padding: 5px 7px !important;
+  font-size: 11px !important;
+}
+
+.war-decision-grid-bottom,
+.war-comparison-grid {
+  gap: 7px !important;
+}
+
+.war-decision-grid-bottom .war-kpi-tile,
+.war-comparison-grid .war-kpi-tile {
+  min-height: 72px !important;
+  padding: 8px !important;
+}
+
+.war-decision-grid-bottom .war-kpi-main,
+.war-comparison-grid .war-kpi-main {
+  font-size: 22px !important;
+  line-height: 1.05 !important;
+}
+
+.war-reward-score-only {
+  align-items: center !important;
+  justify-content: flex-start !important;
+}
+
+.war-reward-score-text span {
+  display: block;
+  color: #93c5fd;
+  font-size: 12px;
+  margin-top: 3px;
+}
+
+.war-reward-factor-list {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 4px;
+  margin-top: 10px;
+}
+
+.war-reward-factor-list span,
+.war-reward-factor-list b {
+  display: grid;
+  place-items: center;
+  min-height: 24px;
+  border-radius: 7px;
+  background: rgba(14, 165, 233, 0.15);
+  color: #bae6fd;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.war-reward-factor-list b {
+  background: rgba(34, 197, 94, 0.16);
+  color: #bbf7d0;
+}
+
+.war-ai-reschedule-panel .primary-btn {
+  min-height: 34px !important;
+}
+
+@media (max-width: 1400px) {
+  .war-ai-bottom-block {
+    min-width: 0 !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-template-areas:
+      "orders orders"
+      "material tools"
+      "alerts alerts"
+      "decision decision"
+      "schedule schedule"
+      "reward reschedule" !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .war-ai-bottom-block {
+    grid-template-columns: 1fr !important;
+    grid-template-areas:
+      "orders"
+      "material"
+      "tools"
+      "alerts"
+      "decision"
+      "schedule"
+      "reward"
+      "reschedule" !important;
+  }
+}
+
+/* FIX109: 套用使用者提供 AIPSDashboard.jsx 設計，右側四塊維持原版不動 */
+.war-ai-board-compact {
+  --design-bg: #0d1117;
+  --design-panel: #161b22;
+  --design-card: #1c2128;
+  --design-border: #30363d;
+  --design-border-soft: #21262d;
+  --design-text: #e6edf3;
+  --design-muted: #8b949e;
+  --design-green: #3fb950;
+  --design-yellow: #d29922;
+  --design-red: #f85149;
+  --design-blue: #58a6ff;
+  --design-purple: #bc8cff;
+}
+
+.war-ai-board-compact .war-main-grid-original {
+  grid-template-columns: 250px minmax(760px, 1fr) 320px !important;
+  gap: 8px !important;
+  align-items: start !important;
+}
+
+.war-left-designed {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+  padding: 8px !important;
+  background: var(--design-panel) !important;
+  border-color: var(--design-border) !important;
+}
+
+.war-left-card {
+  background: var(--design-card);
+  border: 1px solid var(--design-border);
+  border-radius: 8px;
+  padding: 8px;
+  color: var(--design-text);
+}
+
+.war-left-card h3,
+.war-left-card-head h3 {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--design-text);
+}
+
+.war-left-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.war-left-card-head span {
+  color: var(--design-muted);
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.war-status-summary-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.war-status-summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 42px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--design-border-soft);
+}
+
+.war-status-summary-row:last-child {
+  border-bottom: 0;
+}
+
+.war-status-summary-row span {
+  display: block;
+  color: var(--design-muted);
+  font-size: 11px;
+}
+
+.war-status-summary-row b {
+  display: block;
+  font-size: 16px;
+  line-height: 1.15;
+  color: var(--design-text);
+}
+
+.war-status-summary-row.tone-running b,
+.war-status-summary-row.tone-running em { color: var(--design-green); }
+.war-status-summary-row.tone-idle b,
+.war-status-summary-row.tone-idle em { color: var(--design-yellow); }
+.war-status-summary-row.tone-alarm b,
+.war-status-summary-row.tone-alarm em { color: var(--design-red); }
+.war-status-summary-row.tone-maintain b,
+.war-status-summary-row.tone-maintain em { color: var(--design-purple); }
+.war-status-summary-row.tone-offline b,
+.war-status-summary-row.tone-offline em { color: #6e7681; }
+
+.war-status-summary-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.war-status-summary-right em {
+  font-style: normal;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.war-status-mini-ring {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: inline-block;
+  background: conic-gradient(currentColor 0 var(--pct), rgba(110,118,129,.28) var(--pct) 100%);
+  position: relative;
+}
+
+.war-status-mini-ring::after {
+  content: '';
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  background: var(--design-card);
+}
+
+.war-status-mini-ring.tone-running { color: var(--design-green); }
+.war-status-mini-ring.tone-idle { color: var(--design-yellow); }
+.war-status-mini-ring.tone-alarm { color: var(--design-red); }
+.war-status-mini-ring.tone-maintain { color: var(--design-purple); }
+.war-status-mini-ring.tone-offline { color: #6e7681; }
+
+.war-realtime-kpi-body {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.war-realtime-kpi-card .war-mini-ring {
+  width: 60px;
+  height: 60px;
+  flex: 0 0 60px;
+}
+
+.war-kpi-list.compact {
+  display: grid;
+  flex: 1;
+  gap: 5px;
+}
+
+.war-kpi-list.compact span {
+  display: flex;
+  justify-content: space-between;
+  color: var(--design-muted);
+  font-size: 11px;
+}
+
+.war-kpi-list.compact b {
+  color: var(--design-green);
+}
+
+.war-learning-card-compact {
+  display: grid;
+  gap: 7px;
+}
+
+.war-learning-score-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 8px;
+}
+
+.war-learning-score-row span,
+.war-learning-meter.compact span {
+  color: var(--design-muted);
+  font-size: 11px;
+}
+
+.war-learning-score-row strong {
+  color: var(--design-green);
+  font-size: 18px;
+  line-height: 1;
+}
+
+.war-learning-score-row em {
+  color: var(--design-muted);
+  font-style: normal;
+  font-size: 11px;
+}
+
+.war-sparkline.compact {
+  height: 38px !important;
+  margin: 0 !important;
+  border: 1px solid rgba(63,185,80,.15);
+}
+
+.war-learning-meter.compact {
+  display: grid;
+  gap: 4px;
+}
+
+.war-learning-meter.compact > div {
+  height: 7px;
+  border-radius: 999px;
+  background: var(--design-border);
+  overflow: hidden;
+}
+
+.war-learning-meter.compact > div i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--design-blue), var(--design-green));
+}
+
+.war-ai-board-compact .war-production-progress {
+  background: var(--design-card) !important;
+  border-color: var(--design-border) !important;
+  padding: 8px !important;
+  border-radius: 8px !important;
+}
+
+.war-ai-board-compact .war-production-head h3 {
+  font-size: 12px !important;
+}
+
+.war-ai-board-compact .war-production-rings {
+  gap: 8px !important;
+}
+
+.war-ai-board-compact .war-production-rings .war-mini-ring {
+  width: 55px !important;
+  height: 55px !important;
+}
+
+/* 甘特圖接近 AIPSDashboard.jsx：增加剩餘時間欄，行距更密 */
+.war-ai-board-compact .war-gantt-header,
+.war-ai-board-compact .war-gantt-row {
+  grid-template-columns: 64px 64px repeat(7, minmax(72px, 1fr)) 50px 58px !important;
+  min-width: 1040px !important;
+}
+
+.war-ai-board-compact .war-gantt-row {
+  height: 28px !important;
+}
+
+.war-ai-board-compact .war-gantt-header {
+  padding: 4px 0 !important;
+}
+
+.war-ai-board-compact .war-gantt-progress,
+.war-ai-board-compact .war-gantt-remaining {
+  text-align: right;
+  font-size: 11px;
+  color: #8b949e;
+  padding-right: 6px;
+}
+
+.war-ai-board-compact .war-gantt-progress {
+  color: #58a6ff;
+}
+
+.war-ai-board-compact .war-gantt-track {
+  height: 21px !important;
+}
+
+.war-ai-board-compact .war-gantt-bar {
+  top: 2px !important;
+  height: 17px !important;
+  border-radius: 3px !important;
+  font-size: 9.5px !important;
+}
+
+/* 使用者要求：右側這四塊維持原一版內容，不在 FIX109 改 HTML，只保留此註記。 */
+@media (max-width: 1400px) {
+  .war-ai-board-compact .war-main-grid-original {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* FIX110: 嚴格套用使用者提供的 AIPSDashboard.jsx 底部設計，並用 !important 蓋過舊樣式 */
+.war-ai-board-compact {
+  --jsx-bg: #0d1117;
+  --jsx-panel: #161b22;
+  --jsx-card: #1c2128;
+  --jsx-card-hover: #21262d;
+  --jsx-border: #30363d;
+  --jsx-border-light: #21262d;
+  --jsx-text: #e6edf3;
+  --jsx-muted: #8b949e;
+  --jsx-dim: #6e7681;
+  --jsx-green: #3fb950;
+  --jsx-yellow: #d29922;
+  --jsx-orange: #f0883e;
+  --jsx-red: #f85149;
+  --jsx-blue: #58a6ff;
+  --jsx-cyan: #39d0d8;
+  gap: 8px !important;
+}
+
+.war-ai-board-compact .war-main-grid-original {
+  grid-template-columns: 280px minmax(860px, 1fr) 345px !important;
+  gap: 8px !important;
+  align-items: stretch !important;
+  min-height: 0 !important;
+}
+
+.war-ai-board-compact .war-left,
+.war-ai-board-compact .war-center,
+.war-ai-board-compact .war-right {
+  background: var(--jsx-panel) !important;
+  border-color: var(--jsx-border) !important;
+  border-radius: 8px !important;
+  color: var(--jsx-text) !important;
+  padding: 8px !important;
+}
+
+/* CNC-01 ~ CNC-14 拉高，填滿上方甘特圖空白 */
+.war-ai-board-compact .war-center {
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 705px !important;
+}
+
+.war-ai-board-compact .war-gantt {
+  flex: 1 1 auto !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+}
+
+.war-ai-board-compact .war-gantt-header,
+.war-ai-board-compact .war-gantt-row {
+  grid-template-columns: 68px 70px repeat(7, minmax(86px, 1fr)) 58px 68px !important;
+  min-width: 1110px !important;
+}
+
+.war-ai-board-compact .war-gantt-header {
+  height: 30px !important;
+  padding: 4px 0 !important;
+  font-size: 12px !important;
+  color: #8b949e !important;
+}
+
+.war-ai-board-compact .war-gantt-row {
+  height: 40px !important;
+  min-height: 40px !important;
+  border-bottom: 1px solid rgba(48, 54, 61, .92) !important;
+}
+
+.war-ai-board-compact .war-gantt-machine,
+.war-ai-board-compact .war-gantt-state {
+  font-size: 13px !important;
+}
+
+.war-ai-board-compact .war-gantt-track {
+  height: 30px !important;
+  border-radius: 4px !important;
+  background:
+    repeating-linear-gradient(90deg, rgba(48,54,61,.88) 0 1px, transparent 1px 14.285%),
+    rgba(13,17,23,.78) !important;
+}
+
+.war-ai-board-compact .war-gantt-bar {
+  top: 4px !important;
+  height: 22px !important;
+  border-radius: 4px !important;
+  font-size: 10.5px !important;
+  background: linear-gradient(180deg, #2ea043, #1a7f37) !important;
+  border: 1px solid rgba(63,185,80,.28) !important;
+}
+
+.war-ai-board-compact .war-gantt-bar.danger {
+  background: linear-gradient(180deg, #f85149, #b42318) !important;
+  border-color: rgba(248,81,73,.55) !important;
+}
+
+.war-ai-board-compact .war-gantt-bar.predicted {
+  outline: 1px dashed #d29922 !important;
+  outline-offset: -2px !important;
+  box-shadow: inset 0 0 0 1px rgba(210,153,34,.35) !important;
+}
+
+.war-ai-board-compact .war-gantt-progress,
+.war-ai-board-compact .war-gantt-remaining {
+  color: #8b949e !important;
+  font-size: 12px !important;
+  text-align: right !important;
+  padding-right: 6px !important;
+}
+
+.war-ai-board-compact .war-gantt-progress {
+  color: #58a6ff !important;
+}
+
+/* 下半部：照 AIPSDashboard.jsx 的深色卡片/表格/分區去做 */
+.aips-jsx-bottom-grid {
+  display: grid !important;
+  grid-template-columns: 1.15fr 1.1fr .95fr .72fr 1.04fr 1.15fr !important;
+  grid-template-areas:
+    "orders orders orders materials tools alerts"
+    "decision decision schedule schedule reward reschedule" !important;
+  gap: 8px !important;
+  min-width: 1350px !important;
+  width: 100% !important;
+  margin-top: 8px !important;
+  background: transparent !important;
+}
+
+.aips-jsx-panel {
+  background: var(--jsx-card) !important;
+  border: 1px solid var(--jsx-border) !important;
+  border-radius: 6px !important;
+  padding: 10px !important;
+  color: var(--jsx-text) !important;
+  min-height: 0 !important;
+  box-shadow: none !important;
+  overflow: hidden !important;
+}
+
+.aips-jsx-panel h3 {
+  color: var(--jsx-text) !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  line-height: 1.2 !important;
+  margin: 0 0 8px !important;
+  letter-spacing: 0 !important;
+}
+
+.aips-jsx-workorders { grid-area: orders !important; }
+.aips-jsx-materials { grid-area: materials !important; }
+.aips-jsx-tools { grid-area: tools !important; }
+.aips-jsx-alerts { grid-area: alerts !important; }
+.aips-jsx-decision { grid-area: decision !important; }
+.aips-jsx-schedule { grid-area: schedule !important; }
+.aips-jsx-reward { grid-area: reward !important; }
+.aips-jsx-reschedule { grid-area: reschedule !important; }
+
+.aips-jsx-table-wrap {
+  max-height: 128px !important;
+  overflow: auto !important;
+  border-radius: 4px !important;
+  background: #0d1117 !important;
+}
+
+.aips-jsx-table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  font-size: 10px !important;
+  line-height: 1.25 !important;
+  color: var(--jsx-text) !important;
+}
+
+.aips-jsx-table thead th {
+  color: #58a6ff !important;
+  background: #0d1117 !important;
+  font-size: 9.5px !important;
+  font-weight: 700 !important;
+  padding: 5px 6px !important;
+  border-bottom: 1px solid var(--jsx-border) !important;
+  white-space: nowrap !important;
+  text-align: left !important;
+}
+
+.aips-jsx-table tbody td {
+  color: var(--jsx-text) !important;
+  padding: 4px 6px !important;
+  border-bottom: 1px solid var(--jsx-border-light) !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 160px !important;
+}
+
+.aips-jsx-table tbody tr:nth-child(even) td {
+  background: rgba(88,166,255,.035) !important;
+}
+
+.aips-jsx-status {
+  font-weight: 800 !important;
+  font-size: 10px !important;
+  white-space: nowrap !important;
+}
+
+.aips-jsx-status.ok { color: var(--jsx-green) !important; }
+.aips-jsx-status.warn,
+.aips-jsx-status.wait { color: var(--jsx-yellow) !important; }
+.aips-jsx-status.danger { color: var(--jsx-red) !important; }
+.aips-jsx-dqn-score { color: var(--jsx-green) !important; font-weight: 800 !important; }
+
+.aips-jsx-metric-grid {
+  display: grid !important;
+  gap: 6px !important;
+}
+
+.aips-jsx-metric-grid.four {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+}
+
+.aips-jsx-metric-grid > div {
+  background: var(--jsx-panel) !important;
+  border: 1px solid var(--jsx-border) !important;
+  border-radius: 5px !important;
+  padding: 7px 8px !important;
+  min-height: 68px !important;
+}
+
+.aips-jsx-metric-grid span {
+  display: block !important;
+  color: var(--jsx-dim) !important;
+  font-size: 9.5px !important;
+  margin-bottom: 4px !important;
+}
+
+.aips-jsx-metric-grid strong {
+  display: block !important;
+  color: var(--jsx-text) !important;
+  font-size: 15px !important;
+  line-height: 1.15 !important;
+  font-weight: 900 !important;
+}
+
+.aips-jsx-metric-grid em {
+  display: block !important;
+  color: var(--jsx-cyan) !important;
+  font-size: 9.5px !important;
+  font-style: normal !important;
+  margin-top: 4px !important;
+}
+
+.aips-jsx-metric-grid.compare > div:nth-child(1),
+.aips-jsx-metric-grid.compare > div:nth-child(2),
+.aips-jsx-metric-grid.compare > div:nth-child(3) {
+  border-color: rgba(63,185,80,.45) !important;
+}
+
+.aips-jsx-metric-grid.compare > div:nth-child(4) {
+  border-color: rgba(210,153,34,.55) !important;
+}
+
+.aips-jsx-reward-box {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 126px !important;
+  gap: 6px !important;
+}
+
+.aips-jsx-trophy {
+  font-size: 28px !important;
+  line-height: 1 !important;
+}
+
+.aips-jsx-reward-number {
+  display: flex !important;
+  align-items: baseline !important;
+  gap: 2px !important;
+}
+
+.aips-jsx-reward-number b {
+  color: var(--jsx-green) !important;
+  font-size: 24px !important;
+  line-height: 1 !important;
+  font-weight: 900 !important;
+}
+
+.aips-jsx-reward-number span {
+  color: var(--jsx-muted) !important;
+  font-size: 14px !important;
+}
+
+.aips-jsx-mini-sparkline {
+  width: 110px !important;
+  height: 28px !important;
+  display: flex !important;
+  align-items: end !important;
+  gap: 2px !important;
+}
+
+.aips-jsx-mini-sparkline i {
+  flex: 1 !important;
+  min-width: 4px !important;
+  border-radius: 999px 999px 0 0 !important;
+  background: linear-gradient(180deg, var(--jsx-green), var(--jsx-cyan)) !important;
+}
+
+.aips-jsx-sim-head {
+  display: flex !important;
+  gap: 6px !important;
+  align-items: center !important;
+  margin-bottom: 8px !important;
+}
+
+.aips-jsx-sim-head select {
+  flex: 1 !important;
+  min-width: 0 !important;
+  background: var(--jsx-panel) !important;
+  color: var(--jsx-text) !important;
+  border: 1px solid var(--jsx-border) !important;
+  border-radius: 4px !important;
+  padding: 4px 6px !important;
+  font-size: 10px !important;
+}
+
+.aips-jsx-sim-head button,
+.aips-jsx-apply {
+  border: 0 !important;
+  border-radius: 4px !important;
+  background: #1f6feb !important;
+  color: #fff !important;
+  padding: 5px 10px !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  cursor: pointer !important;
+}
+
+.aips-jsx-sim-body {
+  display: grid !important;
+  gap: 5px !important;
+  color: var(--jsx-muted) !important;
+  font-size: 10px !important;
+}
+
+.aips-jsx-sim-body b {
+  color: var(--jsx-green) !important;
+}
+
+.aips-jsx-sim-body span:nth-child(3) b {
+  color: var(--jsx-cyan) !important;
+}
+
+.aips-jsx-apply {
+  width: 100% !important;
+  margin-top: 4px !important;
+  background: var(--jsx-green) !important;
+}
+
+@media (max-width: 1500px) {
+  .aips-jsx-bottom-grid {
+    min-width: 0 !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-template-areas:
+      "orders orders"
+      "materials tools"
+      "alerts alerts"
+      "decision decision"
+      "schedule schedule"
+      "reward reschedule" !important;
+  }
+}
+
+@media (max-width: 820px) {
+  .war-ai-board-compact .war-main-grid-original {
+    grid-template-columns: 1fr !important;
+  }
+
+  .aips-jsx-bottom-grid {
+    grid-template-columns: 1fr !important;
+    grid-template-areas:
+      "orders"
+      "materials"
+      "tools"
+      "alerts"
+      "decision"
+      "schedule"
+      "reward"
+      "reschedule" !important;
+  }
+
+  .aips-jsx-metric-grid.four {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+/* FIX111: 完全依 AIPSDashboard.jsx 重整 AI 排程看板，字體協調、趨勢圖非直方圖 */
+.aips-111-dashboard {
+  --aips-111-bg: #0d1117;
+  --aips-111-panel: #161b22;
+  --aips-111-card: #1c2128;
+  --aips-111-card-2: #21262d;
+  --aips-111-border: #30363d;
+  --aips-111-border-soft: #21262d;
+  --aips-111-text: #e6edf3;
+  --aips-111-muted: #8b949e;
+  --aips-111-dim: #6e7681;
+  --aips-111-green: #3fb950;
+  --aips-111-yellow: #d29922;
+  --aips-111-orange: #f0883e;
+  --aips-111-red: #f85149;
+  --aips-111-blue: #58a6ff;
+  --aips-111-purple: #bc8cff;
+  --aips-111-cyan: #39d0d8;
+  background: var(--aips-111-bg) !important;
+  color: var(--aips-111-text) !important;
+  font-family: "Noto Sans TC", "Microsoft JhengHei", Arial, sans-serif !important;
+  font-size: 12.5px !important;
+  line-height: 1.35 !important;
+  gap: 8px !important;
+}
+
+.aips-111-dashboard * {
+  font-family: inherit !important;
+  box-sizing: border-box !important;
+}
+
+.aips-111-dashboard .war-main-grid-original {
+  display: grid !important;
+  grid-template-columns: 230px minmax(680px, 1fr) 300px !important;
+  gap: 8px !important;
+  align-items: start !important;
+  min-height: 0 !important;
+}
+
+.aips-111-dashboard .war-panel {
+  background: var(--aips-111-panel) !important;
+  border: 1px solid var(--aips-111-border) !important;
+  border-radius: 7px !important;
+  box-shadow: none !important;
+  color: var(--aips-111-text) !important;
+  padding: 8px !important;
+}
+
+.aips-111-dashboard .war-left {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+}
+
+.aips-111-dashboard .war-left-card {
+  background: var(--aips-111-card) !important;
+  border: 1px solid var(--aips-111-border) !important;
+  border-radius: 7px !important;
+  padding: 8px !important;
+  box-shadow: none !important;
+  color: var(--aips-111-text) !important;
+}
+
+.aips-111-dashboard h3,
+.aips-111-dashboard .war-left-card h3,
+.aips-111-dashboard .war-panel h3,
+.aips-111-panel h3 {
+  margin: 0 0 7px !important;
+  font-size: 13px !important;
+  line-height: 1.3 !important;
+  font-weight: 800 !important;
+  color: var(--aips-111-text) !important;
+  letter-spacing: 0 !important;
+}
+
+.aips-111-dashboard .war-left-card-head h3 {
+  margin: 0 !important;
+}
+
+.aips-111-dashboard .war-left-card-head span,
+.aips-111-dashboard p,
+.aips-111-dashboard small,
+.aips-111-dashboard .war-kpi-sub {
+  color: var(--aips-111-muted) !important;
+  font-size: 10.5px !important;
+}
+
+.aips-111-dashboard .war-status-summary-list {
+  gap: 4px !important;
+}
+
+.aips-111-dashboard .war-status-summary-row {
+  min-height: 44px !important;
+  padding: 4px 5px !important;
+  border-radius: 5px !important;
+  background: rgba(13, 17, 23, .42) !important;
+  border: 1px solid var(--aips-111-border-soft) !important;
+}
+
+.aips-111-dashboard .war-status-summary-row span {
+  font-size: 10.5px !important;
+  color: var(--aips-111-muted) !important;
+}
+
+.aips-111-dashboard .war-status-summary-row b {
+  font-size: 16px !important;
+  line-height: 1.2 !important;
+}
+
+.aips-111-dashboard .war-status-summary-right em {
+  font-size: 11px !important;
+  font-weight: 800 !important;
+}
+
+.aips-111-dashboard .war-realtime-kpi-body {
+  gap: 8px !important;
+}
+
+.aips-111-dashboard .war-mini-ring {
+  width: 58px !important;
+  height: 58px !important;
+  flex: 0 0 58px !important;
+}
+
+.aips-111-dashboard .war-mini-ring b {
+  font-size: 15px !important;
+}
+
+.aips-111-dashboard .war-mini-ring span {
+  font-size: 9.5px !important;
+}
+
+.aips-111-dashboard .war-kpi-list.compact span,
+.aips-111-dashboard .war-production-foot span,
+.aips-111-dashboard .war-progress-row span {
+  font-size: 11px !important;
+  color: var(--aips-111-muted) !important;
+}
+
+.aips-111-dashboard .war-kpi-list.compact b,
+.aips-111-dashboard .war-progress-row b,
+.aips-111-dashboard .war-production-foot b {
+  font-size: 11px !important;
+  color: var(--aips-111-green) !important;
+}
+
+.aips-111-dashboard .war-production-progress {
+  background: var(--aips-111-card) !important;
+  border: 1px solid var(--aips-111-border) !important;
+  border-radius: 7px !important;
+  padding: 8px !important;
+}
+
+.aips-111-dashboard .war-production-rings {
+  gap: 6px !important;
+  justify-content: space-between !important;
+}
+
+.aips-111-dashboard .war-progress-row {
+  grid-template-columns: 64px 1fr 54px !important;
+  gap: 6px !important;
+  margin: 4px 0 !important;
+}
+
+.aips-111-dashboard .war-learning-card-compact .aips-111-trend-line {
+  height: 48px !important;
+  width: 100% !important;
+  background: rgba(63, 185, 80, .08) !important;
+  border: 1px solid rgba(63, 185, 80, .18) !important;
+  border-radius: 5px !important;
+  margin: 6px 0 !important;
+}
+
+.aips-111-dashboard .war-learning-score-row span {
+  font-size: 11px !important;
+  color: var(--aips-111-muted) !important;
+}
+
+.aips-111-dashboard .war-learning-score-row strong {
+  font-size: 16px !important;
+  color: var(--aips-111-green) !important;
+}
+
+.aips-111-dashboard .war-learning-score-row em {
+  font-size: 10px !important;
+  color: var(--aips-111-muted) !important;
+  font-style: normal !important;
+}
+
+/* Center gantt as uploaded JSX: compact, no large blank */
+.aips-111-dashboard .war-center {
+  min-height: 0 !important;
+  max-height: none !important;
+  padding: 8px !important;
+  overflow: hidden !important;
+}
+
+.aips-111-dashboard .war-panel-title-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 10px !important;
+  margin: 0 0 6px !important;
+}
+
+.aips-111-dashboard .war-panel-title-row h3 {
+  font-size: 14px !important;
+  margin: 0 0 3px !important;
+}
+
+.aips-111-dashboard .war-panel-title-row h3 span {
+  color: var(--aips-111-cyan) !important;
+  font-size: 12px !important;
+}
+
+.aips-111-dashboard .war-mini-switch {
+  display: flex !important;
+  gap: 3px !important;
+  padding: 2px !important;
+  border: 1px solid var(--aips-111-border) !important;
+  border-radius: 5px !important;
+  background: #0d1117 !important;
+}
+
+.aips-111-dashboard .war-mini-switch button {
+  height: 24px !important;
+  min-width: 34px !important;
+  padding: 0 8px !important;
+  font-size: 12px !important;
+  border: 0 !important;
+  border-radius: 4px !important;
+  color: var(--aips-111-muted) !important;
+  background: transparent !important;
+}
+
+.aips-111-dashboard .war-mini-switch button.active {
+  color: #fff !important;
+  background: #1f6feb !important;
+}
+
+.aips-111-dashboard .war-legend {
+  gap: 12px !important;
+  margin: 5px 0 !important;
+  font-size: 11px !important;
+  color: var(--aips-111-muted) !important;
+}
+
+.aips-111-dashboard .war-gantt {
+  background: #0d1117 !important;
+  border: 1px solid var(--aips-111-border) !important;
+  border-radius: 6px !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  padding-bottom: 4px !important;
+  max-height: 555px !important;
+}
+
+.aips-111-dashboard .war-gantt-header {
+  height: 28px !important;
+  min-width: 980px !important;
+  grid-template-columns: 68px 68px repeat(7, minmax(80px, 1fr)) 48px 58px !important;
+  background: #161b22 !important;
+  border-bottom: 1px solid var(--aips-111-border) !important;
+  font-size: 10.5px !important;
+  color: var(--aips-111-muted) !important;
+}
+
+.aips-111-dashboard .war-gantt-row {
+  min-height: 32px !important;
+  height: 32px !important;
+  min-width: 980px !important;
+  grid-template-columns: 68px 68px 1fr 48px 58px !important;
+  border-bottom: 1px solid var(--aips-111-border-soft) !important;
+  align-items: center !important;
+}
+
+.aips-111-dashboard .war-gantt-machine {
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  color: var(--aips-111-text) !important;
+  padding-left: 6px !important;
+}
+
+.aips-111-dashboard .war-gantt-state {
+  gap: 4px !important;
+  font-size: 11px !important;
+  color: var(--aips-111-muted) !important;
+}
+
+.aips-111-dashboard .war-status-dot {
+  width: 13px !important;
+  height: 13px !important;
+  box-shadow: 0 0 8px currentColor !important;
+}
+
+.aips-111-dashboard .war-gantt-track {
+  height: 22px !important;
+  background: rgba(255,255,255,.02) !important;
+  border: 1px solid var(--aips-111-border-soft) !important;
+  border-radius: 4px !important;
+}
+
+.aips-111-dashboard .war-gantt-bar {
+  height: 18px !important;
+  top: 1px !important;
+  font-size: 10px !important;
+  padding: 0 5px !important;
+  border-radius: 3px !important;
+  line-height: 18px !important;
+  background: linear-gradient(180deg, #2ea043, #1a7f37) !important;
+}
+
+.aips-111-dashboard .war-gantt-bar.predicted {
+  border: 1px dashed var(--aips-111-cyan) !important;
+  background: linear-gradient(180deg, rgba(57,208,216,.42), rgba(31,111,235,.42)) !important;
+}
+
+.aips-111-dashboard .war-gantt-bar.danger,
+.aips-111-dashboard .war-gantt-bar.danger.predicted {
+  background: linear-gradient(180deg, #f85149, #a51d2d) !important;
+}
+
+/* Right side: keep structure, unify fonts */
+.aips-111-dashboard .war-right {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+  padding: 8px !important;
+  max-height: 760px !important;
+  overflow: hidden !important;
+}
+
+.aips-111-dashboard .war-status-distribution,
+.aips-111-dashboard .war-heatmap,
+.aips-111-dashboard .war-table-wrap {
+  background: rgba(13,17,23,.35) !important;
+  border-radius: 6px !important;
+}
+
+.aips-111-dashboard .war-table th,
+.aips-111-dashboard .war-table td {
+  font-size: 11px !important;
+  padding: 5px 6px !important;
+  white-space: nowrap !important;
+}
+
+.aips-111-dashboard .war-heatmap {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 4px !important;
+}
+
+.aips-111-dashboard .war-heatmap-cell {
+  min-height: 52px !important;
+  padding: 5px !important;
+  font-size: 11px !important;
+}
+
+/* Bottom whole area from uploaded JSX */
+.aips-111-bottom-grid {
+  display: grid !important;
+  grid-template-columns: 1.15fr 1fr 1fr .92fr .95fr !important;
+  grid-template-areas:
+    "learning workorders workorders materials tools"
+    "decision decision schedule schedule alerts"
+    "decision decision schedule schedule reward"
+    "decision decision schedule schedule reschedule" !important;
+  gap: 8px !important;
+  width: 100% !important;
+  margin-top: 8px !important;
+}
+
+.aips-111-panel {
+  background: var(--aips-111-card) !important;
+  border: 1px solid var(--aips-111-border) !important;
+  border-radius: 7px !important;
+  padding: 8px !important;
+  color: var(--aips-111-text) !important;
+  overflow: hidden !important;
+  min-width: 0 !important;
+  box-shadow: none !important;
+}
+
+.aips-111-learning { grid-area: learning !important; }
+.aips-111-workorders { grid-area: workorders !important; }
+.aips-111-materials { grid-area: materials !important; }
+.aips-111-tools { grid-area: tools !important; }
+.aips-111-alerts { grid-area: alerts !important; }
+.aips-111-decision { grid-area: decision !important; }
+.aips-111-schedule-summary { grid-area: schedule !important; }
+.aips-111-reward { grid-area: reward !important; }
+.aips-111-reschedule { grid-area: reschedule !important; }
+
+.aips-111-table-wrap {
+  overflow: auto !important;
+  max-height: 156px !important;
+  border-radius: 5px !important;
+  background: #0d1117 !important;
+}
+
+.aips-111-table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  font-size: 11.5px !important;
+}
+
+.aips-111-table th,
+.aips-111-table td {
+  padding: 5px 6px !important;
+  border-bottom: 1px solid var(--aips-111-border-soft) !important;
+  text-align: left !important;
+  white-space: nowrap !important;
+  color: var(--aips-111-text) !important;
+  line-height: 1.25 !important;
+}
+
+.aips-111-table th {
+  color: var(--aips-111-muted) !important;
+  background: var(--aips-111-panel) !important;
+  font-weight: 700 !important;
+  font-size: 11px !important;
+}
+
+.aips-111-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  min-height: 18px !important;
+  padding: 1px 6px !important;
+  border-radius: 4px !important;
+  font-size: 10.5px !important;
+  border: 1px solid transparent !important;
+}
+
+.aips-111-badge.ok { color: var(--aips-111-green) !important; background: rgba(63,185,80,.12) !important; border-color: rgba(63,185,80,.22) !important; }
+.aips-111-badge.danger { color: var(--aips-111-red) !important; background: rgba(248,81,73,.12) !important; border-color: rgba(248,81,73,.22) !important; }
+.aips-111-score-cell { color: var(--aips-111-green) !important; font-weight: 800 !important; }
+.aips-111-text-ok { color: var(--aips-111-green) !important; font-weight: 700 !important; }
+.aips-111-text-warn { color: var(--aips-111-yellow) !important; font-weight: 700 !important; }
+.aips-111-text-danger { color: var(--aips-111-red) !important; font-weight: 700 !important; }
+
+.aips-111-score-row {
+  display: flex !important;
+  align-items: baseline !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  margin-bottom: 6px !important;
+}
+
+.aips-111-score-row span {
+  font-size: 11.5px !important;
+  color: var(--aips-111-muted) !important;
+}
+
+.aips-111-score-row strong {
+  font-size: 20px !important;
+  color: var(--aips-111-green) !important;
+  line-height: 1.1 !important;
+}
+
+.aips-111-score-row em,
+.aips-111-reward em {
+  font-style: normal !important;
+  font-size: 11px !important;
+  color: var(--aips-111-muted) !important;
+}
+
+.aips-111-trend-line {
+  width: 100% !important;
+  height: 58px !important;
+  display: block !important;
+  background: rgba(63, 185, 80, .07) !important;
+  border: 1px solid rgba(63, 185, 80, .16) !important;
+  border-radius: 6px !important;
+}
+
+.aips-111-learning-progress {
+  margin-top: 7px !important;
+  display: grid !important;
+  gap: 4px !important;
+}
+
+.aips-111-learning-progress > div {
+  height: 7px !important;
+  background: var(--aips-111-border) !important;
+  border-radius: 999px !important;
+  overflow: hidden !important;
+}
+
+.aips-111-learning-progress i {
+  display: block !important;
+  height: 100% !important;
+  background: linear-gradient(90deg, var(--aips-111-cyan), var(--aips-111-green)) !important;
+  border-radius: inherit !important;
+}
+
+.aips-111-learning-progress span {
+  font-size: 10.5px !important;
+  color: var(--aips-111-muted) !important;
+}
+
+.aips-111-metric-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+}
+
+.aips-111-metric-grid.four {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+}
+
+.aips-111-metric-grid > div {
+  min-height: 72px !important;
+  padding: 9px !important;
+  border: 1px solid var(--aips-111-border) !important;
+  border-radius: 6px !important;
+  background: rgba(13,17,23,.38) !important;
+  display: grid !important;
+  align-content: center !important;
+  gap: 3px !important;
+}
+
+.aips-111-metric-grid span {
+  font-size: 11px !important;
+  color: var(--aips-111-muted) !important;
+}
+
+.aips-111-metric-grid strong {
+  font-size: 21px !important;
+  line-height: 1.05 !important;
+  color: #fff !important;
+  font-weight: 800 !important;
+}
+
+.aips-111-metric-grid em {
+  font-style: normal !important;
+  font-size: 10.5px !important;
+  color: var(--aips-111-cyan) !important;
+}
+
+.aips-111-reward-box {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  margin-bottom: 6px !important;
+}
+
+.aips-111-trophy {
+  width: 38px !important;
+  height: 38px !important;
+  display: grid !important;
+  place-items: center !important;
+  font-size: 24px !important;
+  border-radius: 8px !important;
+  background: rgba(210,153,34,.14) !important;
+  border: 1px solid rgba(210,153,34,.32) !important;
+}
+
+.aips-111-reward strong {
+  font-size: 26px !important;
+  line-height: 1 !important;
+  color: var(--aips-111-green) !important;
+}
+
+.aips-111-reschedule select,
+.aips-111-reschedule button {
+  width: 100% !important;
+  min-height: 34px !important;
+  border-radius: 6px !important;
+  font-size: 12px !important;
+  border: 1px solid var(--aips-111-border) !important;
+  background: #0d1117 !important;
+  color: var(--aips-111-text) !important;
+  padding: 0 9px !important;
+}
+
+.aips-111-reschedule button {
+  margin-top: 8px !important;
+  background: #238636 !important;
+  border-color: #2ea043 !important;
+  font-weight: 800 !important;
+  cursor: pointer !important;
+}
+
+.aips-111-sim-result {
+  display: grid !important;
+  gap: 4px !important;
+  margin-top: 8px !important;
+  color: var(--aips-111-muted) !important;
+  font-size: 11.5px !important;
+}
+
+.aips-111-sim-result b { color: var(--aips-111-cyan) !important; }
+
+@media (max-width: 1500px) {
+  .aips-111-dashboard .war-main-grid-original {
+    grid-template-columns: 230px minmax(620px, 1fr) 280px !important;
+  }
+  .aips-111-bottom-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    grid-template-areas:
+      "learning workorders workorders materials"
+      "decision decision tools alerts"
+      "schedule schedule reward reschedule" !important;
+  }
+  .aips-111-metric-grid.four {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 1100px) {
+  .aips-111-dashboard .war-main-grid-original,
+  .aips-111-bottom-grid {
+    grid-template-columns: 1fr !important;
+    grid-template-areas: none !important;
+  }
+  .aips-111-learning,
+  .aips-111-workorders,
+  .aips-111-materials,
+  .aips-111-tools,
+  .aips-111-alerts,
+  .aips-111-decision,
+  .aips-111-schedule-summary,
+  .aips-111-reward,
+  .aips-111-reschedule {
+    grid-area: auto !important;
+  }
+}
+
+/* FIX112: 依使用者標註重新協調 AI 排程看板：移除重複學習卡、主區填滿、排程績效 row、決策卡片化 */
+.aips-111-dashboard {
+  min-height: calc(100vh - 72px) !important;
+}
+
+.aips-111-dashboard .war-main-grid-original {
+  align-items: stretch !important;
+  min-height: clamp(650px, calc(100vh - 330px), 820px) !important;
+}
+
+.aips-111-dashboard .war-left,
+.aips-111-dashboard .war-center,
+.aips-111-dashboard .war-right {
+  height: 100% !important;
+  min-height: inherit !important;
+}
+
+.aips-111-dashboard .war-left {
+  justify-content: stretch !important;
+}
+
+.aips-111-dashboard .war-overview-status-card {
+  flex: 1.15 1 0 !important;
+}
+
+.aips-111-dashboard .war-realtime-kpi-card {
+  flex: .7 1 0 !important;
+}
+
+.aips-111-dashboard .war-production-progress {
+  flex: 1.15 1 0 !important;
+}
+
+.aips-111-dashboard .war-learning-card-compact {
+  flex: .9 1 0 !important;
+}
+
+.aips-111-dashboard .war-center {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.aips-111-dashboard .war-gantt {
+  flex: 1 1 auto !important;
+  min-height: 590px !important;
+  max-height: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.aips-111-dashboard .war-gantt-header {
+  flex: 0 0 30px !important;
+}
+
+.aips-111-dashboard .war-gantt-row {
+  min-height: 39px !important;
+  height: 39px !important;
+}
+
+.aips-111-dashboard .war-gantt-track {
+  height: 27px !important;
+}
+
+.aips-111-dashboard .war-gantt-bar {
+  height: 23px !important;
+  line-height: 23px !important;
+  top: 1px !important;
+  font-size: 10.8px !important;
+}
+
+.aips-111-dashboard .war-right {
+  max-height: none !important;
+  min-height: clamp(650px, calc(100vh - 330px), 820px) !important;
+  justify-content: stretch !important;
+}
+
+.aips-111-dashboard .war-right .war-status-distribution {
+  min-height: 138px !important;
+}
+
+.aips-111-dashboard .war-right .war-heatmap {
+  flex: 1 1 auto !important;
+  min-height: 270px !important;
+  align-content: stretch !important;
+}
+
+.aips-111-dashboard .war-right .war-heatmap-cell {
+  min-height: 63px !important;
+}
+
+.aips-111-dashboard .war-right .war-table-wrap {
+  min-height: 112px !important;
+  max-height: 158px !important;
+}
+
+/* 下半部重新排版：移除重複 DQN 學習狀態後，讓工單/物料/刀具/異常 + 決策/績效/Reward/重排協調 */
+.aips-111-bottom-grid {
+  grid-template-columns: 1.2fr 1.15fr 1fr .95fr .95fr !important;
+  grid-template-areas:
+    "workorders workorders materials tools alerts"
+    "decision decision schedule schedule reward"
+    "decision decision schedule schedule reschedule" !important;
+  gap: 8px !important;
+  align-items: stretch !important;
+  margin-top: 8px !important;
+}
+
+.aips-111-learning {
+  display: none !important;
+}
+
+.aips-111-bottom-grid .aips-111-panel,
+.aips-111-bottom-grid .aips-111-table-card {
+  min-height: 178px !important;
+}
+
+.aips-111-workorders .aips-111-table-wrap,
+.aips-111-materials .aips-111-table-wrap,
+.aips-111-tools .aips-111-table-wrap,
+.aips-111-alerts .aips-111-table-wrap {
+  max-height: 190px !important;
+  min-height: 140px !important;
+}
+
+.aips-111-table th,
+.aips-111-table td {
+  font-size: 12px !important;
+  padding: 6px 7px !important;
+}
+
+.aips-111-panel h3,
+.aips-111-table-card h3 {
+  font-size: 13.5px !important;
+  margin-bottom: 8px !important;
+}
+
+.aips-112-decision-card-panel,
+.aips-112-schedule-summary {
+  min-height: 285px !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.aips-112-decision-card-grid {
+  flex: 1 1 auto !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+}
+
+.aips-112-decision-card {
+  min-height: 116px !important;
+  border: 1px solid var(--aips-111-border) !important;
+  border-radius: 8px !important;
+  background: rgba(13, 17, 23, .48) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  padding: 14px !important;
+}
+
+.aips-112-decision-card span {
+  font-size: 12px !important;
+  color: var(--aips-111-muted) !important;
+  margin-bottom: 6px !important;
+}
+
+.aips-112-decision-card strong {
+  font-size: 24px !important;
+  line-height: 1.05 !important;
+  color: #fff !important;
+}
+
+.aips-112-decision-card em {
+  font-style: normal !important;
+  color: var(--aips-111-cyan) !important;
+  font-size: 12px !important;
+  margin-top: 5px !important;
+}
+
+.aips-112-schedule-row-grid {
+  flex: 1 1 auto !important;
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+}
+
+.aips-112-row-metric {
+  min-height: 128px !important;
+  border: 1px solid var(--aips-111-border) !important;
+  border-radius: 8px !important;
+  background: rgba(13, 17, 23, .48) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  padding: 13px !important;
+}
+
+.aips-112-row-metric > span {
+  font-size: 12px !important;
+  color: var(--aips-111-muted) !important;
+  margin-bottom: 8px !important;
+}
+
+.aips-112-row-metric strong {
+  display: flex !important;
+  align-items: baseline !important;
+  gap: 6px !important;
+  flex-wrap: wrap !important;
+  color: #fff !important;
+  line-height: 1.05 !important;
+}
+
+.aips-112-row-metric strong b {
+  font-size: 22px !important;
+  font-weight: 900 !important;
+}
+
+.aips-112-row-metric strong em {
+  font-size: 13px !important;
+  color: var(--aips-111-cyan) !important;
+  font-style: normal !important;
+  font-weight: 800 !important;
+}
+
+.aips-112-row-metric small {
+  font-size: 12px !important;
+  color: var(--aips-111-cyan) !important;
+  margin-top: 8px !important;
+}
+
+.aips-111-reward,
+.aips-111-reschedule {
+  min-height: 136px !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.aips-111-reward .aips-111-trend-line {
+  flex: 1 1 auto !important;
+  min-height: 70px !important;
+}
+
+.aips-112-reschedule-head {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  margin-bottom: 8px !important;
+}
+
+.aips-112-reschedule-head h3 {
+  margin: 0 !important;
+}
+
+.aips-112-sim-button {
+  width: auto !important;
+  min-width: 82px !important;
+  min-height: 28px !important;
+  padding: 0 10px !important;
+  border-radius: 5px !important;
+  border: 1px solid #58a6ff !important;
+  background: #1f6feb !important;
+  color: #fff !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  cursor: pointer !important;
+}
+
+.aips-111-reschedule > button:not(.aips-112-sim-button) {
+  margin-top: auto !important;
+}
+
+@media (max-width: 1500px) {
+  .aips-111-bottom-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    grid-template-areas:
+      "workorders workorders materials tools"
+      "alerts alerts reward reschedule"
+      "decision decision schedule schedule" !important;
+  }
+  .aips-112-schedule-row-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .aips-111-dashboard .war-main-grid-original,
+  .aips-111-bottom-grid {
+    min-height: 0 !important;
+    grid-template-columns: 1fr !important;
+  }
+  .aips-112-decision-card-grid,
+  .aips-112-schedule-row-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* FIX112: AI 排程看板獨立 scoped CSS，強制蓋過舊 style.css，依最新 JSX 調整 */
+.aips-112-dashboard,
+.aips-112-dashboard * {
+  box-sizing: border-box !important;
+  font-family: "Microsoft JhengHei", "Noto Sans TC", Arial, sans-serif !important;
+}
+
+.aips-112-dashboard {
+  --aips-111-bg: #0d1117;
+  --aips-111-panel: #161b22;
+  --aips-111-card: #1c2128;
+  --aips-111-card-2: #21262d;
+  --aips-111-border: #30363d;
+  --aips-111-border-soft: #242b33;
+  --aips-111-text: #e6edf3;
+  --aips-111-muted: #8b949e;
+  --aips-111-dim: #6e7681;
+  --aips-111-green: #3fb950;
+  --aips-111-red: #f85149;
+  --aips-111-yellow: #d29922;
+  --aips-111-blue: #58a6ff;
+  --aips-111-cyan: #39d0d8;
+  background: #0d1117 !important;
+  color: #e6edf3 !important;
+  font-size: 12.5px !important;
+  line-height: 1.38 !important;
+  gap: 8px !important;
+}
+
+/* 圖一 1 / 2：左側與中央往下長高，14 台 CNC 列撐滿空白 */
+.aips-112-dashboard .war-main-grid-original {
+  display: grid !important;
+  grid-template-columns: 238px minmax(760px, 1fr) 304px !important;
+  gap: 8px !important;
+  align-items: stretch !important;
+  min-height: 790px !important;
+}
+
+.aips-112-dashboard .war-left-designed {
+  height: 100% !important;
+  min-height: 790px !important;
+  display: grid !important;
+  grid-template-rows: 1.1fr .8fr 1.15fr .95fr !important;
+  gap: 8px !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+}
+
+.aips-112-dashboard .war-left-card,
+.aips-112-dashboard .war-production-progress {
+  height: 100% !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  background: #1c2128 !important;
+  border: 1px solid #30363d !important;
+  border-radius: 7px !important;
+  padding: 9px !important;
+  color: #e6edf3 !important;
+}
+
+.aips-112-dashboard .war-center {
+  height: 100% !important;
+  min-height: 790px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 8px !important;
+  overflow: hidden !important;
+  background: #161b22 !important;
+  border: 1px solid #30363d !important;
+}
+
+.aips-112-dashboard .war-gantt {
+  flex: 1 1 auto !important;
+  min-height: 700px !important;
+  display: grid !important;
+  grid-template-rows: 30px repeat(14, minmax(46px, 1fr)) !important;
+  gap: 3px !important;
+  overflow: hidden !important;
+}
+
+.aips-112-dashboard .war-gantt-row {
+  min-height: 46px !important;
+  height: auto !important;
+  grid-template-columns: 72px 70px minmax(0, 1fr) 70px !important;
+  padding: 2px 4px !important;
+}
+
+.aips-112-dashboard .war-gantt-track {
+  min-height: 34px !important;
+  height: 34px !important;
+}
+
+.aips-112-dashboard .war-gantt-bar {
+  height: 23px !important;
+  top: 5px !important;
+  border-radius: 4px !important;
+  font-size: 10.5px !important;
+  line-height: 23px !important;
+}
+
+.aips-112-dashboard .war-gantt-machine,
+.aips-112-dashboard .war-gantt-state,
+.aips-112-dashboard .war-gantt-progress {
+  font-size: 11.5px !important;
+  white-space: nowrap !important;
+}
+
+/* 移除圖二 3：下半部不再顯示 DQN 決策分析 */
+.aips-112-dashboard .aips-111-decision,
+.aips-112-dashboard .aips-112-decision-card-panel {
+  display: none !important;
+}
+
+/* 下半部重新排版：整體協調一致，4/5 往下拉高 */
+.aips-112-dashboard .aips-111-bottom-grid {
+  display: grid !important;
+  grid-template-columns: 1.25fr 1fr 1fr 1fr !important;
+  grid-template-areas:
+    "orders orders materials tools"
+    "orders orders alerts alerts"
+    "schedule schedule reward reschedule" !important;
+  gap: 8px !important;
+  min-width: 0 !important;
+  margin-top: 8px !important;
+  align-items: stretch !important;
+}
+
+.aips-112-dashboard .aips-111-workorders { grid-area: orders !important; }
+.aips-112-dashboard .aips-111-materials { grid-area: materials !important; }
+.aips-112-dashboard .aips-111-tools { grid-area: tools !important; }
+.aips-112-dashboard .aips-111-alerts { grid-area: alerts !important; }
+.aips-112-dashboard .aips-111-schedule-summary { grid-area: schedule !important; }
+.aips-112-dashboard .aips-111-reward { grid-area: reward !important; }
+.aips-112-dashboard .aips-111-reschedule { grid-area: reschedule !important; }
+
+.aips-112-dashboard .aips-111-panel {
+  background: #1c2128 !important;
+  border: 1px solid #30363d !important;
+  border-radius: 7px !important;
+  padding: 10px !important;
+  color: #e6edf3 !important;
+  box-shadow: none !important;
+}
+
+.aips-112-dashboard .aips-111-panel h3 {
+  margin: 0 0 8px !important;
+  font-size: 12.5px !important;
+  line-height: 1.25 !important;
+  font-weight: 800 !important;
+  color: #e6edf3 !important;
+}
+
+.aips-112-dashboard .aips-111-table-wrap {
+  max-height: 248px !important;
+  min-height: 0 !important;
+  overflow: auto !important;
+  border-radius: 6px !important;
+}
+
+.aips-112-dashboard .aips-111-table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  table-layout: auto !important;
+  font-size: 11.5px !important;
+}
+
+.aips-112-dashboard .aips-111-table th,
+.aips-112-dashboard .aips-111-table td {
+  padding: 5px 6px !important;
+  line-height: 1.25 !important;
+  white-space: nowrap !important;
+  border-bottom: 1px solid #242b33 !important;
+}
+
+.aips-112-dashboard .aips-111-table th {
+  color: #8b949e !important;
+  font-weight: 700 !important;
+  background: #161b22 !important;
+}
+
+.aips-112-dashboard .aips-111-table td {
+  color: #e6edf3 !important;
+}
+
+/* 今日排程績效：股票行情式卡片，不用一般 KPI，不把單位放下面 */
+.aips-112-dashboard .aips-112-stock-summary {
+  min-height: 174px !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.aips-112-dashboard .aips-112-stock-grid {
+  flex: 1 !important;
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+}
+
+.aips-112-dashboard .aips-112-stock-card {
+  min-height: 126px !important;
+  padding: 9px !important;
+  border-radius: 7px !important;
+  background: #161b22 !important;
+  border: 1px solid #30363d !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+}
+
+.aips-112-dashboard .aips-112-stock-head {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+}
+
+.aips-112-dashboard .aips-112-stock-head span {
+  font-size: 11px !important;
+  color: #8b949e !important;
+  font-weight: 700 !important;
+}
+
+.aips-112-dashboard .aips-112-stock-head em {
+  font-style: normal !important;
+  font-size: 13px !important;
+  font-weight: 900 !important;
+  white-space: nowrap !important;
+}
+
+.aips-112-dashboard .aips-112-stock-head em.good { color: #3fb950 !important; }
+.aips-112-dashboard .aips-112-stock-head em.bad { color: #f85149 !important; }
+
+.aips-112-dashboard .aips-112-stock-values {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  flex-wrap: wrap !important;
+  margin: 6px 0 !important;
+}
+
+.aips-112-dashboard .aips-112-stock-values b {
+  color: #e6edf3 !important;
+  font-size: 12.5px !important;
+  font-weight: 800 !important;
+  white-space: nowrap !important;
+}
+
+.aips-112-dashboard .aips-112-stock-values i {
+  color: #6e7681 !important;
+  font-style: normal !important;
+}
+
+.aips-112-dashboard .aips-112-stock-card .aips-111-trend-line {
+  height: 34px !important;
+  width: 100% !important;
+  background: rgba(13, 17, 23, .55) !important;
+  border-radius: 5px !important;
+}
+
+/* Reward 與重排模擬改為卡片，往下拉高 */
+.aips-112-dashboard .aips-111-reward,
+.aips-112-dashboard .aips-111-reschedule {
+  min-height: 174px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+}
+
+.aips-112-dashboard .aips-111-reward-box {
+  display: grid !important;
+  place-items: center !important;
+  gap: 2px !important;
+  min-height: 82px !important;
+  border-radius: 7px !important;
+  background: #161b22 !important;
+  border: 1px solid #30363d !important;
+}
+
+.aips-112-dashboard .aips-111-trophy {
+  font-size: 24px !important;
+  line-height: 1 !important;
+}
+
+.aips-112-dashboard .aips-111-reward-box strong {
+  font-size: 24px !important;
+  line-height: 1 !important;
+  color: #3fb950 !important;
+}
+
+.aips-112-dashboard .aips-111-reward-box em {
+  font-size: 13px !important;
+  color: #8b949e !important;
+  font-style: normal !important;
+  margin-left: 2px !important;
+}
+
+.aips-112-dashboard .aips-111-reward .aips-111-trend-line {
+  height: 44px !important;
+  background: rgba(63, 185, 80, .08) !important;
+  border-radius: 5px !important;
+}
+
+.aips-112-dashboard .aips-112-reschedule-head {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.aips-112-dashboard .aips-112-sim-button,
+.aips-112-dashboard .aips-111-reschedule button {
+  border: 0 !important;
+  border-radius: 5px !important;
+  background: #58a6ff !important;
+  color: #fff !important;
+  font-size: 11.5px !important;
+  font-weight: 800 !important;
+  padding: 6px 10px !important;
+  min-height: 30px !important;
+  cursor: pointer !important;
+}
+
+.aips-112-dashboard .aips-111-reschedule > button:last-child {
+  width: 100% !important;
+  background: #3fb950 !important;
+  color: #fff !important;
+  margin-top: 6px !important;
+}
+
+.aips-112-dashboard .aips-111-reschedule select {
+  width: 100% !important;
+  min-height: 30px !important;
+  border-radius: 5px !important;
+  border: 1px solid #30363d !important;
+  background: #161b22 !important;
+  color: #e6edf3 !important;
+  padding: 4px 6px !important;
+  font-size: 11.5px !important;
+}
+
+.aips-112-dashboard .aips-111-sim-result {
+  display: grid !important;
+  gap: 5px !important;
+  font-size: 11.5px !important;
+  color: #8b949e !important;
+}
+
+.aips-112-dashboard .aips-111-sim-result b {
+  color: #39d0d8 !important;
+}
+
+@media (max-width: 1500px) {
+  .aips-112-dashboard .war-main-grid-original {
+    grid-template-columns: 238px minmax(680px, 1fr) 300px !important;
+  }
+  .aips-112-dashboard .aips-111-bottom-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-template-areas:
+      "orders orders"
+      "materials tools"
+      "alerts alerts"
+      "schedule schedule"
+      "reward reschedule" !important;
+  }
+}
+
+@media (max-width: 980px) {
+  .aips-112-dashboard .war-main-grid-original,
+  .aips-112-dashboard .aips-111-bottom-grid {
+    grid-template-columns: 1fr !important;
+    grid-template-areas: none !important;
+    min-height: 0 !important;
+  }
+  .aips-112-dashboard .war-left-designed,
+  .aips-112-dashboard .war-center {
+    min-height: 0 !important;
+  }
+  .aips-112-dashboard .aips-111-workorders,
+  .aips-112-dashboard .aips-111-materials,
+  .aips-112-dashboard .aips-111-tools,
+  .aips-112-dashboard .aips-111-alerts,
+  .aips-112-dashboard .aips-111-schedule-summary,
+  .aips-112-dashboard .aips-111-reward,
+  .aips-112-dashboard .aips-111-reschedule {
+    grid-area: auto !important;
+  }
+  .aips-112-dashboard .aips-112-stock-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
