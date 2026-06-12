@@ -3547,7 +3547,7 @@ pre {
 
 .sidebar-collapse-btn {
   position: absolute;
-  right: -14px;
+  right: -0.4rem;
   top: 92px;
   z-index: 20;
   width: 30px;
@@ -5916,7 +5916,7 @@ table td {
 .aips-111-dashboard p,
 .aips-111-dashboard small,
 .aips-111-dashboard .war-kpi-sub {
-  color: var(--aips-111-muted) !important;
+  color: #ffffff !important;
   font-size: 10.5px !important;
 }
 
@@ -5934,7 +5934,7 @@ table td {
 
 .aips-111-dashboard .war-status-summary-row span {
   font-size: 10.5px !important;
-  color: var(--aips-111-muted) !important;
+  color: #ffffff !important;
 }
 
 .aips-111-dashboard .war-status-summary-row b {
@@ -5969,7 +5969,7 @@ table td {
 .aips-111-dashboard .war-production-foot span,
 .aips-111-dashboard .war-progress-row span {
   font-size: 11px !important;
-  color: var(--aips-111-muted) !important;
+  color: #ffffff !important;
 }
 
 .aips-111-dashboard .war-kpi-list.compact b,
@@ -6008,7 +6008,7 @@ table td {
 
 .aips-111-dashboard .war-learning-score-row span {
   font-size: 11px !important;
-  color: var(--aips-111-muted) !important;
+  color: #ffffff !important;
 }
 
 .aips-111-dashboard .war-learning-score-row strong {
@@ -6018,7 +6018,7 @@ table td {
 
 .aips-111-dashboard .war-learning-score-row em {
   font-size: 10px !important;
-  color: var(--aips-111-muted) !important;
+  color: #ffffff !important;
   font-style: normal !important;
 }
 
@@ -6064,7 +6064,7 @@ table td {
   font-size: 12px !important;
   border: 0 !important;
   border-radius: 4px !important;
-  color: var(--aips-111-muted) !important;
+  color: #ffffff !important;
   background: transparent !important;
 }
 
@@ -6077,7 +6077,7 @@ table td {
   gap: 12px !important;
   margin: 5px 0 !important;
   font-size: 11px !important;
-  color: var(--aips-111-muted) !important;
+  color: #ffffff !important;
 }
 
 .aips-111-dashboard .war-gantt {
@@ -6097,7 +6097,7 @@ table td {
   background: #161b22 !important;
   border-bottom: 1px solid var(--aips-111-border) !important;
   font-size: 10.5px !important;
-  color: var(--aips-111-muted) !important;
+  color: #ffffff !important;
 }
 
 .aips-111-dashboard .war-gantt-row {
@@ -6119,7 +6119,7 @@ table td {
 .aips-111-dashboard .war-gantt-state {
   gap: 4px !important;
   font-size: 11px !important;
-  color: var(--aips-111-muted) !important;
+  color: #ffffff !important;
 }
 
 .aips-111-dashboard .war-status-dot {
@@ -6249,7 +6249,7 @@ table td {
 }
 
 .aips-111-table th {
-  color: var(--aips-111-muted) !important;
+  color: #ffffff !important;
   background: var(--aips-111-panel) !important;
   font-weight: 700 !important;
   font-size: 11px !important;
@@ -6282,7 +6282,7 @@ table td {
 
 .aips-111-score-row span {
   font-size: 11.5px !important;
-  color: var(--aips-111-muted) !important;
+  color: #ffffff !important;
 }
 
 .aips-111-score-row strong {
@@ -6295,7 +6295,7 @@ table td {
 .aips-111-reward em {
   font-style: normal !important;
   font-size: 11px !important;
-  color: var(--aips-111-muted) !important;
+  color: #ffffff !important;
 }
 
 .aips-111-trend-line {
@@ -6329,7 +6329,7 @@ table td {
 
 .aips-111-learning-progress span {
   font-size: 10.5px !important;
-  color: var(--aips-111-muted) !important;
+  color: #ffffff !important;
 }
 
 .aips-111-metric-grid {
@@ -6355,7 +6355,7 @@ table td {
 
 .aips-111-metric-grid span {
   font-size: 11px !important;
-  color: var(--aips-111-muted) !important;
+  color: #ffffff !important;
 }
 
 .aips-111-metric-grid strong {
@@ -6419,7 +6419,7 @@ table td {
   display: grid !important;
   gap: 4px !important;
   margin-top: 8px !important;
-  color: var(--aips-111-muted) !important;
+  color: #ffffff !important;
   font-size: 11.5px !important;
 }
 
@@ -6623,7 +6623,7 @@ table td {
 
 .aips-112-decision-card span {
   font-size: 12px !important;
-  color: var(--aips-111-muted) !important;
+  color: #ffffff !important;
   margin-bottom: 6px !important;
 }
 
@@ -6660,7 +6660,7 @@ table td {
 
 .aips-112-row-metric > span {
   font-size: 12px !important;
-  color: var(--aips-111-muted) !important;
+  color: #ffffff !important;
   margin-bottom: 8px !important;
 }
 
@@ -7150,4 +7150,214 @@ table td {
   .aips-112-dashboard .aips-112-stock-grid {
     grid-template-columns: 1fr !important;
   }
+}
+
+
+/* FIX113: AI 排程看板直向分隔線可拖曳調整左右寬度 */
+.aips-112-dashboard .war-main-grid-original.aips-resizable-layout,
+.aips-111-dashboard .war-main-grid-original.aips-resizable-layout,
+.war-ai-board-compact .war-main-grid-original.aips-resizable-layout {
+  display: grid !important;
+  grid-template-columns:
+    var(--aips-ai-left-col, 238px)
+    12px
+    minmax(620px, 1fr)
+    12px
+    var(--aips-ai-right-col, 304px) !important;
+  grid-template-areas: "left resize-left center resize-right right" !important;
+  gap: 0 !important;
+  align-items: stretch !important;
+  column-gap: 0 !important;
+}
+
+.aips-112-dashboard .war-main-grid-original.aips-resizable-layout .war-left-designed,
+.aips-111-dashboard .war-main-grid-original.aips-resizable-layout .war-left-designed,
+.war-ai-board-compact .war-main-grid-original.aips-resizable-layout .war-left-designed {
+  grid-area: left !important;
+  min-width: 0 !important;
+  margin-right: 8px !important;
+}
+
+.aips-112-dashboard .war-main-grid-original.aips-resizable-layout .war-center,
+.aips-111-dashboard .war-main-grid-original.aips-resizable-layout .war-center,
+.war-ai-board-compact .war-main-grid-original.aips-resizable-layout .war-center {
+  grid-area: center !important;
+  min-width: 0 !important;
+  margin: 0 8px !important;
+}
+
+.aips-112-dashboard .war-main-grid-original.aips-resizable-layout .war-right,
+.aips-111-dashboard .war-main-grid-original.aips-resizable-layout .war-right,
+.war-ai-board-compact .war-main-grid-original.aips-resizable-layout .war-right {
+  grid-area: right !important;
+  min-width: 0 !important;
+  margin-left: 8px !important;
+}
+
+.aips-dashboard-resizer {
+  width: 12px !important;
+  min-width: 12px !important;
+  height: 100% !important;
+  cursor: col-resize !important;
+  position: relative !important;
+  z-index: 8 !important;
+  align-self: stretch !important;
+  touch-action: none !important;
+  user-select: none !important;
+  border-radius: 10px !important;
+}
+
+.aips-dashboard-resizer-left {
+  grid-area: resize-left !important;
+}
+
+.aips-dashboard-resizer-right {
+  grid-area: resize-right !important;
+}
+
+.aips-dashboard-resizer::before {
+  content: "" !important;
+  position: absolute !important;
+  top: 8px !important;
+  bottom: 8px !important;
+  left: 50% !important;
+  width: 2px !important;
+  transform: translateX(-50%) !important;
+  border-radius: 999px !important;
+  background: rgba(56, 189, 248, 0.22) !important;
+  box-shadow: 0 0 0 rgba(56, 189, 248, 0) !important;
+  transition: background .15s ease, box-shadow .15s ease, width .15s ease !important;
+}
+
+.aips-dashboard-resizer::after {
+  content: "⋮" !important;
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  color: rgba(125, 211, 252, 0.65) !important;
+  font-size: 18px !important;
+  line-height: 1 !important;
+  opacity: 0 !important;
+  transition: opacity .15s ease !important;
+  pointer-events: none !important;
+}
+
+.aips-dashboard-resizer:hover,
+.aips-dashboard-resizer:active {
+  background: rgba(14, 165, 233, 0.10) !important;
+}
+
+.aips-dashboard-resizer:hover::before,
+.aips-dashboard-resizer:active::before {
+  width: 4px !important;
+  background: rgba(56, 189, 248, 0.85) !important;
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.55) !important;
+}
+
+.aips-dashboard-resizer:hover::after,
+.aips-dashboard-resizer:active::after {
+  opacity: 1 !important;
+}
+
+body.aips-ai-board-resizing,
+body.aips-ai-board-resizing * {
+  cursor: col-resize !important;
+  user-select: none !important;
+}
+
+@media (max-width: 1200px) {
+  .aips-112-dashboard .war-main-grid-original.aips-resizable-layout,
+  .aips-111-dashboard .war-main-grid-original.aips-resizable-layout,
+  .war-ai-board-compact .war-main-grid-original.aips-resizable-layout {
+    grid-template-columns: 1fr !important;
+    grid-template-areas:
+      "left"
+      "center"
+      "right" !important;
+    gap: 8px !important;
+  }
+
+  .aips-dashboard-resizer {
+    display: none !important;
+  }
+
+  .aips-112-dashboard .war-main-grid-original.aips-resizable-layout .war-left-designed,
+  .aips-111-dashboard .war-main-grid-original.aips-resizable-layout .war-left-designed,
+  .war-ai-board-compact .war-main-grid-original.aips-resizable-layout .war-left-designed,
+  .aips-112-dashboard .war-main-grid-original.aips-resizable-layout .war-center,
+  .aips-111-dashboard .war-main-grid-original.aips-resizable-layout .war-center,
+  .war-ai-board-compact .war-main-grid-original.aips-resizable-layout .war-center,
+  .aips-112-dashboard .war-main-grid-original.aips-resizable-layout .war-right,
+  .aips-111-dashboard .war-main-grid-original.aips-resizable-layout .war-right,
+  .war-ai-board-compact .war-main-grid-original.aips-resizable-layout .war-right {
+    margin: 0 !important;
+  }
+}
+
+
+/* FIX114: 機台負載熱力圖文字放大、白字、異常紅字；獨立覆蓋舊 style.css */
+.aips-111-dashboard .war-right .war-heatmap-cell,
+.aips-111-dashboard .war-heatmap-cell {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+}
+
+.aips-111-dashboard .war-right .war-heatmap-cell b,
+.aips-111-dashboard .war-heatmap-cell b {
+  color: #ffffff !important;
+  font-size: 15px !important;
+  font-weight: 900 !important;
+  line-height: 1.18 !important;
+  letter-spacing: .2px !important;
+}
+
+.aips-111-dashboard .war-right .war-heatmap-cell span,
+.aips-111-dashboard .war-heatmap-cell span {
+  color: #ffffff !important;
+  font-size: 22px !important;
+  font-weight: 950 !important;
+  line-height: 1.08 !important;
+  text-shadow: 0 1px 6px rgba(0,0,0,.35) !important;
+}
+
+.aips-111-dashboard .war-right .war-heatmap-cell small,
+.aips-111-dashboard .war-heatmap-cell small,
+.aips-111-dashboard .war-right .war-heatmap-cell .heatmap-note,
+.aips-111-dashboard .war-heatmap-cell .heatmap-note {
+  display: block !important;
+  color: #ffffff !important;
+  font-size: 13px !important;
+  font-weight: 900 !important;
+  line-height: 1.25 !important;
+  letter-spacing: .1px !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  text-shadow: 0 1px 5px rgba(0,0,0,.45) !important;
+}
+
+.aips-111-dashboard .war-right .war-heatmap-cell .heatmap-note.alarm,
+.aips-111-dashboard .war-heatmap-cell .heatmap-note.alarm {
+  color: #ff4d4f !important;
+  text-shadow: 0 0 8px rgba(239,68,68,.45) !important;
+}
+
+.aips-111-dashboard .war-right .war-heatmap-cell .heatmap-note.idle,
+.aips-111-dashboard .war-heatmap-cell .heatmap-note.idle {
+  color: #facc15 !important;
+}
+
+.aips-111-dashboard .war-right .war-heatmap-cell .heatmap-note.maintain,
+.aips-111-dashboard .war-heatmap-cell .heatmap-note.maintain {
+  color: #c084fc !important;
+}
+
+.aips-111-dashboard .war-right .war-heatmap-cell .heatmap-note.offline,
+.aips-111-dashboard .war-heatmap-cell .heatmap-note.offline {
+  color: #cbd5e1 !important;
+}
+
+.aips-111-dashboard .war-right .war-heatmap-cell .heatmap-note.normal,
+.aips-111-dashboard .war-heatmap-cell .heatmap-note.normal {
+  color: #ffffff !important;
 }
