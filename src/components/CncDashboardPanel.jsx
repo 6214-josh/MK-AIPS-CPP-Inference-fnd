@@ -232,10 +232,10 @@ function WarGantt({ rows, cards, viewMode = 'week' }) {
   const cncCodes = Array.from({ length: 14 }, (_, index) => `CNC-${pad2(index + 1)}`)
   const grouped = useMemo(() => {
     const map = {}
-    ;(rows || []).forEach((row) => {
-      if (!map[row.cnc_machine_id]) map[row.cnc_machine_id] = []
-      map[row.cnc_machine_id].push(row)
-    })
+      ; (rows || []).forEach((row) => {
+        if (!map[row.cnc_machine_id]) map[row.cnc_machine_id] = []
+        map[row.cnc_machine_id].push(row)
+      })
     return map
   }, [rows])
   const cardMap = useMemo(() => Object.fromEntries((cards || []).map((c) => [c.cnc_machine_id, c])), [cards])
@@ -365,7 +365,13 @@ function Heatmap({ rows }) {
           <div key={stableKey("heatmap", row, index)} className={`war-heatmap-cell ${tone}`}>
             <b>{row.cnc_machine_id}</b>
             <span>{formatPercent(rate, 0)}</span>
-            <small>{row.status === 'ALARM' ? '異常' : row.ai_judgement}</small>
+            <span>
+              {row.status === 'ALARM' ? (
+                <span style={{ color: 'red' }}>異常</span>
+              ) : (
+                row.ai_judgement
+              )}
+            </span>
           </div>
         )
       })}
@@ -911,13 +917,13 @@ export default function CncDashboardPanel() {
       setAiBoardColumns(() => {
         const next = targetColumn === 'left'
           ? {
-              left: Math.max(190, Math.min(380, startColumns.left + dx)),
-              right: startColumns.right,
-            }
+            left: Math.max(190, Math.min(380, startColumns.left + dx)),
+            right: startColumns.right,
+          }
           : {
-              left: startColumns.left,
-              right: Math.max(260, Math.min(520, startColumns.right - dx)),
-            }
+            left: startColumns.left,
+            right: Math.max(260, Math.min(520, startColumns.right - dx)),
+          }
 
         try {
           window.localStorage.setItem('aips-ai-board-resizable-columns', JSON.stringify(next))
