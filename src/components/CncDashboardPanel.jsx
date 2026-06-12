@@ -640,8 +640,8 @@ function AIBoardBottomBlock({ data, kpi, rewardStats, workOrders, lineStockRows,
       <section className="aips-111-panel aips-111-reschedule">
         <div className="aips-112-reschedule-head">
           <h3>重排程模擬</h3>
-          <button type="button" className="aips-112-sim-button" onClick={onSimulate || onReschedule} disabled={loading}>{loading ? '計算中...' : '模擬運算'}</button>
         </div>
+        <button type="button" className="aips-112-sim-button" onClick={onSimulate || onReschedule} disabled={loading}>{loading ? '計算中...' : '模擬運算'}</button>
         <select defaultValue="urgent"><option value="urgent">情境：加入急單</option></select>
         <div className="aips-111-sim-result">
           <span>模擬結果：<b>{simulation.status || '可行'}</b></span>
